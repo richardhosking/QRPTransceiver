@@ -7,3 +7,13 @@ All software and firmware source code in this repository is licensed under the
 GNU General Public License, version 3, or (at your option) any later version
 (GPL-3.0-or-later). See:
   LICENSES/GPL-3.0-or-later.txt
+
+B) Hardware design files
+All hardware design files in this repository (including, but not limited to:
+schematics, PCB layout files, CAD/mechanical files, BOM, manufacturing outputs,
+and related documentation) are licensed under the
+CERN Open Hardware Licence Version 2 - Strongly Reciprocal (CERN-OHL-S-2.0). See:
+  LICENSES/CERN-OHL-S-2.0.txt
+
+Unless a file or directory contains an explicit license notice that says
+otherwise, the above mapping applies.
