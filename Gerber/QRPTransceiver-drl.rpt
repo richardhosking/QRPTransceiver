@@ -1,0 +1,28 @@
+Drill report for QRPTransceiver.kicad_pcb
+Created on 2026-04-22T12:51:02+1000
+
+Copper Layer Stackup:
+    =============================================================
+    L1 :  F.Cu                      front
+    L2 :  B.Cu                      back
+
+
+Drill file 'QRPTransceiver-PTH.drl' contains
+    plated through holes:
+    =============================================================
+    T1  0.400mm  0.0157"  (93 holes)
+    T2  0.762mm  0.0300"  (13 holes)
+    T3  1.000mm  0.0394"  (25 holes)
+    T4  1.500mm  0.0591"  (1 hole)
+    T5  1.700mm  0.0669"  (4 holes)
+    T6  3.000mm  0.1181"  (4 holes)
+    T7  3.000mm  0.1181"  (2 holes)
+
+    Total plated holes count 142
+
+
+Drill file 'QRPTransceiver-NPTH.drl' contains
+    unplated through holes:
+    =============================================================
+
+    Total unplated holes count 0
