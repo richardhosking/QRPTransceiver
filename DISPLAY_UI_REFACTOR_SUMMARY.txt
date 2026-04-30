@@ -1,0 +1,62 @@
+Display UI Refactor Summary
+Date: 25 Apr 2026
+Project: QRPTransceiverV3 (Raspberry Pi Pico)
+
+Overview
+--------
+The display routines were moved out of src/main.cpp into a dedicated local library
+named DisplayUI to improve structure and maintainability.
+
+What was changed
+----------------
+1) New library files created:
+   - lib/DisplayUI/src/DisplayUI.h
+   - lib/DisplayUI/src/DisplayUI.cpp
+
+2) Display responsibilities moved into library:
+   - TFT pin constants (CS/DC/RST/MOSI/SCK/MISO/BL)
+   - TFT object ownership (Adafruit_ILI9341 instance)
+   - Display initialization wrapper:
+       begin(spiHz)
+   - Register probe helper:
+       readProbeData()
+   - UI setup and drawing:
+       configureUi()
+       drawSplashScreen()
+       drawMainScreen()
+       updateFrequencyDisplay(vfoFreq, mode)
+   - Mode naming helper:
+       modeName()
+
+3) src/main.cpp refactored to use DisplayUI API:
+   - Includes DisplayUI.h
+   - Calls DisplayUI::begin(...) instead of direct tft.begin(...)
+   - Reads probe data via DisplayUI::readProbeData()
+   - Calls DisplayUI::configureUi(), drawSplashScreen(), drawMainScreen(),
+     and updateFrequencyDisplay(...)
+   - Removed duplicated UI drawing functions from main.cpp
+
+4) Compatibility fix:
+   - Replaced C++17 inline constexpr pin variables with extern const
+     declarations in DisplayUI.h and definitions in DisplayUI.cpp,
+     to avoid compiler warnings under current toolchain settings.
+
+Current firmware status
+-----------------------
+- Firmware tag in main.cpp: HW_SPI_18_19_16_UI_V4
+- Build status: SUCCESS (pico_bootsel environment)
+- Display operation: confirmed working (ILI9341 responds, UI visible)
+
+Why this refactor helps
+-----------------------
+- Keeps application logic in main.cpp focused on system flow
+- Isolates display implementation details in one module
+- Makes future UI changes safer and easier
+- Enables reuse of display code across future source files/modules
+
+Suggested next steps
+--------------------
+- Add input handling module (encoder/buttons) and call
+  DisplayUI::updateFrequencyDisplay(...) on state changes
+- Optionally add a DisplayUI::setStatusLine(...) helper for runtime status text
+- Add unit-style render helpers for cleaner separation of data/model vs drawing

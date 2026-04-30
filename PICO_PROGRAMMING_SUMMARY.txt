@@ -1,0 +1,108 @@
+QRP Transceiver V3 – Pico Programming Summary
+============================================
+
+Date: 25 April 2026
+Project: QRPTransceiverV3
+Target: Raspberry Pi Pico (RP2040)
+
+1. Initial serial bring-up
+--------------------------
+- Enabled USB serial debug output at 115200 baud.
+- Added startup banner and periodic "alive" heartbeat messages.
+- Confirmed the Pico application was running reliably over USB CDC.
+
+2. Display diagnostic firmware
+------------------------------
+- Added detailed display initialization logging in src/main.cpp.
+- Logged configured TFT pins on startup.
+- Enabled backlight control and reset pulse diagnostics.
+- Added register readback tests:
+  - MADCTL
+  - PIXFMT
+  - ID4 bytes
+- Added visible display test patterns:
+  - white flash
+  - black flash
+  - RGB bar pattern
+
+3. SPI testing and pin work
+---------------------------
+- Tested manual pin toggling to confirm signal activity on display-related pins.
+- Explicitly configured TFT control pins as outputs during debugging.
+- Added MISO support so display readback could be tested.
+- Moved from software SPI wiring to hardware SPI test wiring.
+
+4. Current hardware-SPI diagnostic configuration
+-----------------------------------------------
+Current diagnostic firmware tag:
+  HW_SPI_18_19_16_CS_DC_SWAPPED_V1
+
+Current Pico pin mapping in code:
+  CS   = GP20   (software-swapped test)
+  DC   = GP17   (software-swapped test)
+  RST  = GP21
+  MOSI = GP19
+  SCK  = GP18
+  MISO = GP16
+  BL   = GP22
+
+5. Controller probing performed
+-------------------------------
+- Tested Adafruit ILI9341 initialization.
+- Added ST7789 fallback initialization and test pattern.
+- Both controller init paths run in the diagnostic firmware.
+
+6. Upload and monitor work on the Pico
+--------------------------------------
+- Investigated unstable upload behavior using normal ACM serial upload.
+- Found repeated failures with picotool/rp2040load over /dev/ttyACM0.
+- Found stale monitor/serial processes could block the port.
+- Adjusted PlatformIO monitor settings for better reconnection behavior.
+- Added BOOTSEL-based upload workflow as the default reliable path.
+
+7. Custom BOOTSEL UF2 upload path
+---------------------------------
+- Created a custom upload method that copies firmware.uf2 to the RPI-RP2 drive.
+- Added script:
+  scripts/upload_uf2.py
+- This avoids unreliable direct serial flashing and ensures the UF2 file is actually written.
+
+8. PlatformIO configuration changes
+-----------------------------------
+- Default environment set to pico_bootsel.
+- Kept a pico environment for picotool-based upload attempts.
+- Current default upload strategy is BOOTSEL + UF2 copy.
+
+9. Firmware identification added
+--------------------------------
+- Added build timestamp to the serial output.
+- Added firmware tag string to prove which firmware image is running.
+- This confirmed when old firmware was still present versus when a new image had actually been flashed.
+
+10. Latest observed results
+---------------------------
+Latest serial output confirmed:
+- New firmware is running.
+- Hardware SPI pin mapping is active.
+- Display backlight control works.
+- Display reset sequence runs.
+- ILI9341 register reads returned 0x00.
+- ST7789 fallback also produced no visible display result.
+
+11. Present status
+------------------
+The Pico programming and debug/upload path is now working.
+The remaining issue appears to be at the display interface/module level rather than basic Pico firmware upload.
+Likely remaining causes are:
+- incorrect CS/DC wiring or module labeling
+- display not actually using the expected SPI controller
+- display hardware fault
+- module power/interface mismatch
+
+Files changed during this work
+------------------------------
+- src/main.cpp
+- platformio.ini
+- scripts/upload_uf2.py
+
+End of summary.
