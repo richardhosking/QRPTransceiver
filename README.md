@@ -22,14 +22,28 @@ The design is centered on a phasing-based architecture for HF operation and is b
 ├── include/            # Shared firmware headers
 ├── test/               # Firmware tests
 ├── scripts/            # Utility scripts
+├── docs/
+│   ├── architecture.md
+│   ├── bringup.md
+│   ├── calibration.md
+│   ├── firmware-overview.md
+│   ├── hardware-overview.md
+│   ├── pinout.md
+│   └── summaries/      # Summary notes and rework history
 ├── Datasheets/         # Reference component datasheets
 ├── Gerber/             # Manufacturing outputs
 ├── pdf/                # Exported documents
+├── archive/
+│   ├── backups/        # Backup zips, cache/rescue files, and *-bak artifacts
+│   ├── legacy-kicad/   # Legacy KiCad schematic/netlist files
+│   └── temporary/      # Autosave, lock, and temporary design files
 ├── QRPTransceiver.kicad_pro
 ├── QRPTransceiver.kicad_sch
 ├── QRPTransceiver.kicad_pcb
 └── platformio.ini
 ```
+
+Firmware directories remain at the repository root for PlatformIO, and active hardware design/fabrication files also remain at the repository root for now.
 
 ## Main Subsystems
 
@@ -51,8 +65,12 @@ The design is centered on a phasing-based architecture for HF operation and is b
 Project documentation is organized under `docs/`:
 
 - `docs/architecture.md` — overall system architecture
+- `docs/bringup.md` — bring-up notes and observations
+- `docs/calibration.md` — calibration workflow and notes
 - `docs/hardware-overview.md` — hardware design structure and subsystem roles
 - `docs/firmware-overview.md` — firmware organization and responsibilities
+- `docs/pinout.md` — firmware-visible pin assignments
+- `docs/summaries/` — summary notes for key refactors, programming flow, and quadrature correction work
 
 ## Current Status
 
@@ -60,7 +78,7 @@ The repository currently contains:
 - active KiCad project files
 - firmware for Pico-based control and display
 - generated outputs and reference materials
-- some legacy, backup, and intermediate design artifacts
+- archived legacy, backup, and intermediate design artifacts under `archive/`
 
 As the project evolves, the intent is to keep the current KiCad 8 project files and PlatformIO firmware as the primary editable sources.
 
