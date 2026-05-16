@@ -33,13 +33,17 @@ The design is centered on a phasing-based architecture for HF operation and is b
 ├── Datasheets/         # Reference component datasheets
 ├── Gerber/             # Manufacturing outputs
 ├── pdf/                # Exported documents
+├── archive/
+│   ├── backups/        # Backup zips, cache/rescue files, and *-bak artifacts
+│   ├── legacy-kicad/   # Legacy KiCad schematic/netlist files
+│   └── temporary/      # Autosave, lock, and temporary design files
 ├── QRPTransceiver.kicad_pro
 ├── QRPTransceiver.kicad_sch
 ├── QRPTransceiver.kicad_pcb
 └── platformio.ini
 ```
 
-Firmware directories remain at the repository root for PlatformIO, and the hardware design and fabrication files also remain at the repository root for now.
+Firmware directories remain at the repository root for PlatformIO, and active hardware design/fabrication files also remain at the repository root for now.
 
 ## Main Subsystems
 
@@ -74,7 +78,7 @@ The repository currently contains:
 - active KiCad project files
 - firmware for Pico-based control and display
 - generated outputs and reference materials
-- some legacy, backup, and intermediate design artifacts
+- archived legacy, backup, and intermediate design artifacts under `archive/`
 
 As the project evolves, the intent is to keep the current KiCad 8 project files and PlatformIO firmware as the primary editable sources.
 
