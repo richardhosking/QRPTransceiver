@@ -17,11 +17,21 @@ The design is centered on a phasing-based architecture for HF operation and is b
 
 ```text
 .
-├── src/                # Main firmware application
-├── lib/                # Firmware libraries (UI, input, SI5351 control, etc.)
-├── include/            # Shared firmware headers
-├── test/               # Firmware tests
-├── scripts/            # Utility scripts
+├── firmware/
+│   ├── src/                # Main firmware application
+│   ├── lib/                # Firmware libraries (UI, input, SI5351 control, etc.)
+│   ├── include/            # Shared firmware headers
+│   ├── test/               # Firmware tests
+│   ├── scripts/            # Utility scripts
+│   └── platformio.ini      # PlatformIO project file
+├── hardware/
+│   ├── kicad/
+│   │   ├── QRPTransceiver.kicad_pro
+│   │   ├── QRPTransceiver.kicad_sch
+│   │   ├── QRPTransceiver.kicad_pcb
+│   │   ├── QRPTransceiver.pretty/   # Local footprint library
+│   │   └── lib_sch/                 # Local symbol library files
+│   └── outputs/            # Manufacturing outputs, exports, and generated artifacts
 ├── docs/
 │   ├── architecture.md
 │   ├── bringup.md
@@ -29,21 +39,18 @@ The design is centered on a phasing-based architecture for HF operation and is b
 │   ├── firmware-overview.md
 │   ├── hardware-overview.md
 │   ├── pinout.md
-│   └── summaries/      # Summary notes and rework history
-├── Datasheets/         # Reference component datasheets
-├── Gerber/             # Manufacturing outputs
-├── pdf/                # Exported documents
+│   └── summaries/          # Summary notes and rework history
+├── reference/
+│   ├── datasheets/         # Reference component datasheets
+│   └── licenses/           # License/reference documents
 ├── archive/
-│   ├── backups/        # Backup zips, cache/rescue files, and *-bak artifacts
-│   ├── legacy-kicad/   # Legacy KiCad schematic/netlist files
-│   └── temporary/      # Autosave, lock, and temporary design files
-├── QRPTransceiver.kicad_pro
-├── QRPTransceiver.kicad_sch
-├── QRPTransceiver.kicad_pcb
-└── platformio.ini
+│   ├── backups/            # Backup zips, cache/rescue files, and *-bak artifacts
+│   ├── legacy-kicad/       # Legacy KiCad schematic/netlist files
+│   └── temporary/          # Autosave, lock, and temporary design files
+└── README.md
 ```
 
-Firmware directories remain at the repository root for PlatformIO, and active hardware design/fabrication files also remain at the repository root for now.
+The repository is now organized so that active firmware lives under `firmware/`, the active KiCad project lives under `hardware/kicad/`, generated hardware outputs live under `hardware/outputs/`, and reference material is stored under `reference/`.
 
 ## Main Subsystems
 
@@ -54,11 +61,11 @@ Firmware directories remain at the repository root for PlatformIO, and active ha
 - manufacturing outputs and design reports
 
 ### Firmware
-- `src/main.cpp` as the control entry point
-- `lib/DisplayUI` for the TFT display layer
-- `lib/RotaryInput` for tuning encoder input
-- `lib/PushButtons` for front-panel button handling
-- `lib/SI5351Control` for synthesizer control and band-specific quadrature setup
+- `firmware/src/main.cpp` as the control entry point
+- `firmware/lib/DisplayUI` for the TFT display layer
+- `firmware/lib/RotaryInput` for tuning encoder input
+- `firmware/lib/PushButtons` for front-panel button handling
+- `firmware/lib/SI5351Control` for synthesizer control and band-specific quadrature setup
 
 ## Documentation
 
@@ -75,17 +82,18 @@ Project documentation is organized under `docs/`:
 ## Current Status
 
 The repository currently contains:
-- active KiCad project files
-- firmware for Pico-based control and display
-- generated outputs and reference materials
+- active KiCad project files under `hardware/kicad/`
+- firmware for Pico-based control and display under `firmware/`
+- generated outputs under `hardware/outputs/`
+- reference materials under `reference/`
 - archived legacy, backup, and intermediate design artifacts under `archive/`
 
-As the project evolves, the intent is to keep the current KiCad 8 project files and PlatformIO firmware as the primary editable sources.
+As the project evolves, the active KiCad project and PlatformIO firmware remain the primary editable sources in their dedicated subdirectories.
 
 ## Toolchain
 
 ### Hardware
-- KiCad 8 project files are present in the repository
+- KiCad 8 project files are present under `hardware/kicad/`
 
 ### Firmware
 - PlatformIO
