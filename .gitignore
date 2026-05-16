@@ -3,3 +3,28 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# PlatformIO build outputs
+.pio/
+
+# VS Code workspace state
+.vscode/*
+!.vscode/extensions.json
+
+# KiCad autosave, lock, backup, and cache artifacts
+*_autosave-*
+~*.lck
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*.sch-bak
+*.bak
+*.bck
+*-bak
+fp-info-cache
+*-cache.lib
+*-cache.dcm
+*-cache.bck
+
+# Common generated or local artifacts
+*.log
+*.tmp
