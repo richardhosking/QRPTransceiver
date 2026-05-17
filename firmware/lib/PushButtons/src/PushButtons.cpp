@@ -4,11 +4,11 @@
 
 namespace PushButtons {
 
-static Config s_cfg{7, 8, 9, -1, true, 25};
-static bool s_raw[4] = {false, false, false, false};
-static bool s_stable[4] = {false, false, false, false};
-static bool s_edgePress[4] = {false, false, false, false};
-static unsigned long s_lastChangeMs[4] = {0, 0, 0, 0};
+static Config s_cfg{7, 8, 9, -1, 11, true, 25};
+static bool s_raw[5] = {false, false, false, false, false};
+static bool s_stable[5] = {false, false, false, false, false};
+static bool s_edgePress[5] = {false, false, false, false, false};
+static unsigned long s_lastChangeMs[5] = {0, 0, 0, 0, 0};
 
 static int8_t pinFor(ButtonId id) {
   switch (id) {
@@ -16,6 +16,7 @@ static int8_t pinFor(ButtonId id) {
     case ButtonId::Band: return s_cfg.bandPin;
     case ButtonId::Step: return s_cfg.stepPin;
     case ButtonId::Fn:   return s_cfg.fnPin;
+    case ButtonId::TxRx: return s_cfg.txRxPin;
     default:             return -1;
   }
 }

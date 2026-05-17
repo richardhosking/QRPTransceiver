@@ -16,6 +16,40 @@ const int8_t  TFT_MISO = 16;
 
 static Adafruit_ILI9341 s_tft(TFT_CS, TFT_DC, TFT_RST);
 
+static constexpr int16_t kSMeterBarX = 8;
+static constexpr int16_t kSMeterBarY = 164;
+static constexpr int16_t kSMeterBarW = 304;
+static constexpr int16_t kSMeterBarH = 18;
+
+static constexpr int16_t kSMeterCalX[7] = {44, 82, 120, 158, 196, 234, 272};
+static const char* const kSMeterLabels[7] = {"1", "2", "4", "6", "9", "+10", "+20"};
+
+static int16_t mapRawToSMeterX(uint16_t raw) {
+  if (raw <= kSMeterCalRaw[0]) {
+    const int32_t x = kSMeterBarX + ((int32_t)(kSMeterCalX[0] - kSMeterBarX) * raw) / kSMeterCalRaw[0];
+    return static_cast<int16_t>(x);
+  }
+
+  for (size_t i = 1; i < 7; ++i) {
+    if (raw <= kSMeterCalRaw[i]) {
+      const uint16_t spanRaw = kSMeterCalRaw[i] - kSMeterCalRaw[i - 1];
+      const uint16_t deltaRaw = raw - kSMeterCalRaw[i - 1];
+      const int16_t spanX = kSMeterCalX[i] - kSMeterCalX[i - 1];
+      const int32_t x = kSMeterCalX[i - 1] + (static_cast<int32_t>(spanX) * deltaRaw) / spanRaw;
+      return static_cast<int16_t>(x);
+    }
+  }
+
+  const uint16_t extraRaw = (raw > kSMeterCalRaw[6]) ? (raw - kSMeterCalRaw[6]) : 0;
+  const uint16_t tailRawSpan = 4095U - kSMeterCalRaw[6];
+  const int16_t tailXSpan = (kSMeterBarX + kSMeterBarW - 1) - kSMeterCalX[6];
+  const int32_t x = kSMeterCalX[6] + (static_cast<int32_t>(tailXSpan) * extraRaw) / tailRawSpan;
+  if (x > (kSMeterBarX + kSMeterBarW - 1)) {
+    return kSMeterBarX + kSMeterBarW - 1;
+  }
+  return static_cast<int16_t>(x);
+}
+
 Adafruit_ILI9341& tft() {
   return s_tft;
 }
@@ -61,70 +95,74 @@ void drawSplashScreen() {
 void drawMainScreen() {
   s_tft.fillScreen(ILI9341_BLACK);
 
-  // Frequency display area
-  s_tft.drawRect(0, 0, 320, 60, ILI9341_CYAN);
+  // Header
+  s_tft.setTextColor(ILI9341_CYAN);
+  s_tft.setTextSize(1);
+  s_tft.setCursor(8, 6);
+  s_tft.print("VK3BFX QRP Transceiver");
 
-  // Mode label
+  // Large frequency lane
+  s_tft.drawRoundRect(4, 20, 312, 86, 6, ILI9341_CYAN);
+
+  // Mode and S-meter section
   s_tft.setTextColor(ILI9341_WHITE);
   s_tft.setTextSize(2);
-  s_tft.setCursor(10, 70);
-  s_tft.print("Mode: ");
+  s_tft.setCursor(8, 116);
+  s_tft.print("Mode:");
 
-  // Band label
-  s_tft.setCursor(10, 95);
-  s_tft.print("Band: ");
-
-  // S-meter placeholder
-  s_tft.setTextColor(ILI9341_WHITE);
   s_tft.setTextSize(1);
-  s_tft.setCursor(10, 130);
-  s_tft.println("S-Meter:");
-  s_tft.drawRect(10, 142, 200, 16, ILI9341_WHITE);
-
-  // Status bar
-  s_tft.drawFastHLine(0, 225, 320, ILI9341_CYAN);
-  s_tft.setTextColor(ILI9341_CYAN);
-  s_tft.setCursor(4, 228);
-  s_tft.println("RX  |  AGC: ON  |  ATT: OFF");
+  s_tft.setCursor(8, 150);
+  s_tft.print("S meter");
+  s_tft.drawRect(kSMeterBarX, kSMeterBarY, kSMeterBarW, kSMeterBarH, ILI9341_WHITE);
+  for (size_t i = 0; i < 7; ++i) {
+    s_tft.drawFastVLine(kSMeterCalX[i], kSMeterBarY + 1, kSMeterBarH - 2, ILI9341_DARKGREY);
+    s_tft.setCursor(kSMeterCalX[i] - ((i >= 5) ? 8 : 3), 186);
+    s_tft.print(kSMeterLabels[i]);
+  }
 }
 
 void updateFrequencyDisplay(uint64_t vfoFreq, Mode currentMode) {
-  // Clear frequency and mode fields
-  s_tft.fillRect(1, 1, 318, 58, ILI9341_BLACK);
-  s_tft.fillRect(70, 70, 200, 18, ILI9341_BLACK);
-  s_tft.fillRect(70, 95, 200, 18, ILI9341_BLACK);
+  // Clear dynamic fields
+  s_tft.fillRect(8, 28, 304, 72, ILI9341_BLACK);
+  s_tft.fillRect(86, 116, 224, 18, ILI9341_BLACK);
 
-  // Format: MHz.kHz.Hz  e.g. 7.100.000
+  // Format: KHz.Hz  e.g. 7100.000
   uint32_t f    = static_cast<uint32_t>(vfoFreq);
-  uint16_t mhz  = f / 1000000;
-  uint16_t khz  = (f % 1000000) / 1000;
+  uint32_t khz  = f / 1000;
   uint16_t hz   = f % 1000;
-  char buf[20];
-  snprintf(buf, sizeof(buf), "%u.%03u.%03u Hz", mhz, khz, hz);
+  char buf[24];
+  snprintf(buf, sizeof(buf), "%lu.%03u", static_cast<unsigned long>(khz), hz);
 
   s_tft.setTextColor(ILI9341_GREEN);
-  s_tft.setTextSize(3);
-  s_tft.setCursor(10, 15);
+  s_tft.setTextSize(5);
+  s_tft.setCursor(10, 40);
   s_tft.print(buf);
 
   // Mode
   s_tft.setTextColor(ILI9341_YELLOW);
   s_tft.setTextSize(2);
-  s_tft.setCursor(70, 70);
+  s_tft.setCursor(86, 116);
   s_tft.println(modeName(currentMode));
+}
 
-  // Band (simple lookup)
-  s_tft.setCursor(70, 95);
-  if      (vfoFreq >= 1800000  && vfoFreq <= 2000000)  s_tft.println("160m");
-  else if (vfoFreq >= 3500000  && vfoFreq <= 4000000)  s_tft.println("80m");
-  else if (vfoFreq >= 7000000  && vfoFreq <= 7300000)  s_tft.println("40m");
-  else if (vfoFreq >= 10100000 && vfoFreq <= 10150000) s_tft.println("30m");
-  else if (vfoFreq >= 14000000 && vfoFreq <= 14350000) s_tft.println("20m");
-  else if (vfoFreq >= 18068000 && vfoFreq <= 18168000) s_tft.println("17m");
-  else if (vfoFreq >= 21000000 && vfoFreq <= 21450000) s_tft.println("15m");
-  else if (vfoFreq >= 28000000 && vfoFreq <= 29700000) s_tft.println("10m");
-  else if (vfoFreq >= 50000000 && vfoFreq <= 54000000) s_tft.println("6m");
-  else                                                  s_tft.println("--");
+void updateSMeterDisplay(uint16_t averageRaw, uint16_t peakRaw) {
+  if (averageRaw > 4095U) averageRaw = 4095U;
+  if (peakRaw > 4095U) peakRaw = 4095U;
+
+  const int16_t avgX = mapRawToSMeterX(averageRaw);
+  const int16_t peakX = mapRawToSMeterX(peakRaw);
+
+  // Keep a clear box around the S-meter while refreshing the inside.
+  s_tft.drawRect(kSMeterBarX, kSMeterBarY, kSMeterBarW, kSMeterBarH, ILI9341_WHITE);
+  s_tft.fillRect(kSMeterBarX + 1, kSMeterBarY + 1, kSMeterBarW - 2, kSMeterBarH - 2, ILI9341_BLACK);
+
+  const int16_t barWidth = avgX - (kSMeterBarX + 1);
+  if (barWidth > 0) {
+    s_tft.fillRect(kSMeterBarX + 1, kSMeterBarY + 1, barWidth, kSMeterBarH - 2, ILI9341_GREEN);
+  }
+
+  // Peak hold marker (5-second peak) as a thin red line.
+  s_tft.drawFastVLine(peakX, kSMeterBarY + 1, kSMeterBarH - 2, ILI9341_RED);
 }
 
 const char* modeName(Mode m) {

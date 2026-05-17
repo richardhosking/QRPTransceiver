@@ -6,10 +6,20 @@
 
 namespace SI5351Control {
 
-static Si5351 s_si5351;
-static bool s_ready = false;
-static uint64_t s_vfoHz = 0;
-static uint32_t s_xtalHz = 25000000UL;
+struct DeviceState {
+  Si5351* si5351;
+  bool ready;
+  uint64_t vfoHz;
+  uint32_t xtalHz;
+  uint8_t i2cAddress;
+};
+
+static Si5351 s_si5351Addr60(SI5351_BUS_BASE_ADDR);
+static Si5351 s_si5351Addr61(SI5351_BUS_BASE_ADDR + 1);
+static DeviceState s_deviceStates[] = {
+  {&s_si5351Addr60, false, 0, 25000000UL, SI5351_BUS_BASE_ADDR},
+  {&s_si5351Addr61, false, 0, 25000000UL, static_cast<uint8_t>(SI5351_BUS_BASE_ADDR + 1)}
+};
 
 struct BandProfile {
   Band band;
@@ -32,11 +42,57 @@ static const BandProfile kBandProfiles[] = {
     {Band::B15M,  33, 0, 625000, 40, 0x00, 0x28, "15m"},
     {Band::B12M,  28, 0, 833333, 30, 0x00, 0x1E, "12m"},
     {Band::B10M,  28, 0, 1000000, 25, 0x00, 0x19, "10m"},
+  {Band::B6M,   30, 0, 1000000, 25, 0x00, 0x19, "6m"},
 };
 
 static const BandProfile* findBandProfile(Band band) {
   for (const auto& p : kBandProfiles) {
     if (p.band == band) return &p;
+  }
+  return nullptr;
+}
+
+static uint64_t constrainTxFrequencyHz(uint64_t requestedHz) {
+  uint64_t nearestHz = kTxBandLimitsHz[0].low;
+  uint64_t nearestDelta = (requestedHz > nearestHz) ? (requestedHz - nearestHz) : (nearestHz - requestedHz);
+
+  for (const auto& range : kTxBandLimitsHz) {
+    if (requestedHz >= range.low && requestedHz <= range.high) {
+      return requestedHz;
+    }
+
+    const uint64_t lowDelta = (requestedHz > range.low) ? (requestedHz - range.low) : (range.low - requestedHz);
+    if (lowDelta < nearestDelta) {
+      nearestDelta = lowDelta;
+      nearestHz = range.low;
+    }
+
+    const uint64_t highDelta = (requestedHz > range.high) ? (requestedHz - range.high) : (range.high - requestedHz);
+    if (highDelta < nearestDelta) {
+      nearestDelta = highDelta;
+      nearestHz = range.high;
+    }
+  }
+
+  return nearestHz;
+}
+
+static DeviceState& stateForDevice(Device device) {
+  switch (device) {
+    case Device::Tx:
+      return s_deviceStates[1];
+    case Device::Rx:
+    default:
+      return s_deviceStates[0];
+  }
+}
+
+static Si5351* chipForAddress(uint8_t address) {
+  if (address == SI5351_BUS_BASE_ADDR) {
+    return &s_si5351Addr60;
+  }
+  if (address == static_cast<uint8_t>(SI5351_BUS_BASE_ADDR + 1)) {
+    return &s_si5351Addr61;
   }
   return nullptr;
 }
@@ -104,33 +160,64 @@ static bool pickQuadratureDivider(uint64_t rfHz, uint16_t& dividerOut) {
 }
 
 bool begin(const Config& cfg) {
-  Wire.begin();
-  s_xtalHz = cfg.xtalFreqHz;
+  return beginDevice(Device::Rx, {SI5351_BUS_BASE_ADDR, cfg.xtalFreqHz, cfg.correctionPpb});
+}
 
-  // Etherkit SI5351 expects frequency in hundredths of Hz for set_freq().
-  if (!s_si5351.init(SI5351_CRYSTAL_LOAD_8PF, cfg.xtalFreqHz, cfg.correctionPpb)) {
-    s_ready = false;
+bool beginDevice(Device device, const DeviceConfig& cfg) {
+  Wire.begin();
+  DeviceState& state = stateForDevice(device);
+  Si5351* chip = chipForAddress(cfg.i2cAddress);
+  if (!chip) {
+    state.ready = false;
     return false;
   }
 
-  s_si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA);
-  s_si5351.drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA);
-  s_si5351.output_enable(SI5351_CLK0, 1);
-  s_si5351.output_enable(SI5351_CLK1, 0);
-  s_ready = true;
+  state.si5351 = chip;
+  state.i2cAddress = cfg.i2cAddress;
+  state.xtalHz = cfg.xtalFreqHz;
+
+  // Etherkit SI5351 expects frequency in hundredths of Hz for set_freq().
+  if (!state.si5351->init(SI5351_CRYSTAL_LOAD_8PF, cfg.xtalFreqHz, cfg.correctionPpb)) {
+    state.ready = false;
+    return false;
+  }
+
+  state.si5351->drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA);
+  state.si5351->drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA);
+  state.si5351->output_enable(SI5351_CLK0, 1);
+  state.si5351->output_enable(SI5351_CLK1, 0);
+  state.ready = true;
   return true;
 }
 
 void setVFO(uint64_t rfHz) {
-  s_vfoHz = rfHz;
-  if (!s_ready) return;
-
-  const uint64_t freqCentiHz = rfHz * 100ULL;
-  s_si5351.set_freq(freqCentiHz, SI5351_CLK0);
+  setVFO(Device::Rx, rfHz);
 }
 
-bool setQuadrature90(uint64_t rfHz) {
-  if (!s_ready || rfHz == 0) return false;
+void setVFO(Device device, uint64_t rfHz) {
+  if (device == Device::Tx) {
+    rfHz = constrainTxFrequencyHz(rfHz);
+  }
+
+  DeviceState& state = stateForDevice(device);
+  state.vfoHz = rfHz;
+  if (!state.ready) return;
+
+  const uint64_t freqCentiHz = rfHz * 100ULL;
+  state.si5351->set_freq(freqCentiHz, SI5351_CLK0);
+}
+
+bool setQuadrature90(uint64_t rfHz, bool reversePhase) {
+  return setQuadrature90(Device::Rx, rfHz, reversePhase);
+}
+
+bool setQuadrature90(Device device, uint64_t rfHz, bool reversePhase) {
+  if (device == Device::Tx) {
+    rfHz = constrainTxFrequencyHz(rfHz);
+  }
+
+  DeviceState& state = stateForDevice(device);
+  if (!state.ready || rfHz == 0) return false;
 
   // Preferred path: direct in-chip 90° quadrature at RF output frequency.
   uint16_t ratio = 0;
@@ -138,18 +225,18 @@ bool setQuadrature90(uint64_t rfHz) {
     const uint64_t pllCentiHz = rfHz * static_cast<uint64_t>(ratio) * 100ULL;
     const uint64_t outCentiHz = rfHz * 100ULL;
 
-    s_si5351.set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
-    s_si5351.set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
+    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
+    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
 
-    s_si5351.set_clock_invert(SI5351_CLK0, 0);
-    s_si5351.set_clock_invert(SI5351_CLK1, 0);
-    s_si5351.set_phase(SI5351_CLK0, 0);
-    s_si5351.set_phase(SI5351_CLK1, static_cast<uint8_t>(ratio));
-    s_si5351.pll_reset(SI5351_PLLA);
+    state.si5351->set_clock_invert(SI5351_CLK0, 0);
+    state.si5351->set_clock_invert(SI5351_CLK1, 0);
+    state.si5351->set_phase(SI5351_CLK0, reversePhase ? static_cast<uint8_t>(ratio) : 0);
+    state.si5351->set_phase(SI5351_CLK1, reversePhase ? 0 : static_cast<uint8_t>(ratio));
+    state.si5351->pll_reset(SI5351_PLLA);
 
-    s_si5351.output_enable(SI5351_CLK0, 1);
-    s_si5351.output_enable(SI5351_CLK1, 1);
-    s_vfoHz = rfHz;
+    state.si5351->output_enable(SI5351_CLK0, 1);
+    state.si5351->output_enable(SI5351_CLK1, 1);
+    state.vfoHz = rfHz;
     return true;
   }
 
@@ -165,11 +252,11 @@ bool setQuadrature90(uint64_t rfHz) {
   const uint64_t outCentiHz = lo8xHz * 100ULL;
 
   // Both CLK0 and CLK1 use PLLA for phase coherence.
-  s_si5351.set_ms_source(SI5351_CLK0, SI5351_PLLA);
-  s_si5351.set_ms_source(SI5351_CLK1, SI5351_PLLA);
+  state.si5351->set_ms_source(SI5351_CLK0, SI5351_PLLA);
+  state.si5351->set_ms_source(SI5351_CLK1, SI5351_PLLA);
 
-  s_si5351.set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
-  s_si5351.set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
+  state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
+  state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
 
   // For 8x RF with 720 MHz PLL:
   // MS ratio = 720 / (8*RF) = 90 / RF
@@ -180,44 +267,49 @@ bool setQuadrature90(uint64_t rfHz) {
   const uint16_t msRatio = (static_cast<uint64_t>(720000000ULL) / (8ULL * rfHz)) & 0xFFFF;
   const uint8_t phaseWord90 = static_cast<uint8_t>(((msRatio + 1) / 4) & 0x7F);
 
-  s_si5351.set_clock_invert(SI5351_CLK0, 0);
-  s_si5351.set_clock_invert(SI5351_CLK1, 0);
-  s_si5351.set_phase(SI5351_CLK0, 0);
-  s_si5351.set_phase(SI5351_CLK1, phaseWord90);
+  state.si5351->set_clock_invert(SI5351_CLK0, 0);
+  state.si5351->set_clock_invert(SI5351_CLK1, 0);
+  state.si5351->set_phase(SI5351_CLK0, reversePhase ? phaseWord90 : 0);
+  state.si5351->set_phase(SI5351_CLK1, reversePhase ? 0 : phaseWord90);
   
   // Single PLL reset for phase alignment.
-  s_si5351.pll_reset(SI5351_PLLA);
+  state.si5351->pll_reset(SI5351_PLLA);
 
   // Apply R divider /8 to both clocks to reach target RF frequency.
-  programRDivForClock(s_si5351, SI5351_CLK0, 8);
-  programRDivForClock(s_si5351, SI5351_CLK1, 8);
+  programRDivForClock(*state.si5351, SI5351_CLK0, 8);
+  programRDivForClock(*state.si5351, SI5351_CLK1, 8);
 
-  s_si5351.output_enable(SI5351_CLK0, 1);
-  s_si5351.output_enable(SI5351_CLK1, 1);
-  s_vfoHz = rfHz;
+  state.si5351->output_enable(SI5351_CLK0, 1);
+  state.si5351->output_enable(SI5351_CLK1, 1);
+  state.vfoHz = rfHz;
   return true;
 }
 
 bool setupBandQuadrature(Band band) {
-  if (!s_ready) return false;
+  return setupBandQuadrature(Device::Rx, band);
+}
+
+bool setupBandQuadrature(Device device, Band band) {
+  DeviceState& state = stateForDevice(device);
+  if (!state.ready) return false;
 
   const BandProfile* p = findBandProfile(band);
   if (!p) return false;
 
-  const uint64_t pllCentiHz = pllFreqCentiHz(*p, s_xtalHz);
+  const uint64_t pllCentiHz = pllFreqCentiHz(*p, state.xtalHz);
   const uint64_t outCentiHz = pllCentiHz / p->divider;
 
-  s_si5351.set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
-  s_si5351.set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
+  state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
+  state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
 
   // Preserve legacy band phase behavior from prior project.
-  s_si5351.si5351_write(SI5351_CLK0_PHASE_OFFSET, p->phaseClk0);
-  s_si5351.si5351_write(SI5351_CLK1_PHASE_OFFSET, p->phaseClk1);
-  s_si5351.pll_reset(SI5351_PLLA);
+  state.si5351->si5351_write(SI5351_CLK0_PHASE_OFFSET, p->phaseClk0);
+  state.si5351->si5351_write(SI5351_CLK1_PHASE_OFFSET, p->phaseClk1);
+  state.si5351->pll_reset(SI5351_PLLA);
 
-  s_si5351.output_enable(SI5351_CLK0, 1);
-  s_si5351.output_enable(SI5351_CLK1, 1);
-  s_vfoHz = outCentiHz / 100ULL;
+  state.si5351->output_enable(SI5351_CLK0, 1);
+  state.si5351->output_enable(SI5351_CLK1, 1);
+  state.vfoHz = outCentiHz / 100ULL;
   return true;
 }
 
@@ -227,17 +319,30 @@ const char* bandName(Band band) {
 }
 
 void enableOutput(bool enable) {
-  if (!s_ready) return;
-  s_si5351.output_enable(SI5351_CLK0, enable ? 1 : 0);
-  s_si5351.output_enable(SI5351_CLK1, enable ? 1 : 0);
+  enableOutput(Device::Rx, enable);
+}
+
+void enableOutput(Device device, bool enable) {
+  DeviceState& state = stateForDevice(device);
+  if (!state.ready) return;
+  state.si5351->output_enable(SI5351_CLK0, enable ? 1 : 0);
+  state.si5351->output_enable(SI5351_CLK1, enable ? 1 : 0);
 }
 
 bool isReady() {
-  return s_ready;
+  return isReady(Device::Rx);
+}
+
+bool isReady(Device device) {
+  return stateForDevice(device).ready;
 }
 
 uint64_t currentVFO() {
-  return s_vfoHz;
+  return currentVFO(Device::Rx);
+}
+
+uint64_t currentVFO(Device device) {
+  return stateForDevice(device).vfoHz;
 }
 
 } // namespace SI5351Control

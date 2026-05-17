@@ -9,6 +9,7 @@ enum class ButtonId : uint8_t {
   Band,
   Step,
   Fn,
+  TxRx,
   Count
 };
 
@@ -17,11 +18,12 @@ struct Config {
   int8_t bandPin;
   int8_t stepPin;
   int8_t fnPin;
+  int8_t txRxPin;
   bool activeLow;
   uint16_t debounceMs;
 };
 
-void begin(const Config& cfg = {7, 8, 9, -1, true, 25});
+void begin(const Config& cfg = {7, 8, 9, -1, 11, true, 25});
 void update();
 bool pressed(ButtonId id);
 
