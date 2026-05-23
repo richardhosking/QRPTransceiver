@@ -22,7 +22,9 @@ enum class CommandType : uint8_t {
   CycleBand,
   CycleStep,
   SaveSettings,
-  ToggleTxRx
+  ToggleTxRx,
+  PowerShortPress,
+  PowerLongPress
 };
 
 enum class MuteOutput : uint8_t {

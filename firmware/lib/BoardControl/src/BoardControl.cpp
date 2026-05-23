@@ -9,6 +9,7 @@ namespace BoardControl {
 namespace {
 
 constexpr uint8_t kQueueCapacity = 8;
+constexpr uint16_t kPowerToggleHoldMs = 1500;
 
 Config s_cfg{
   true,
@@ -31,6 +32,9 @@ uint16_t s_sMeterAverageRaw = 0;
 uint16_t s_sMeterPeak5sRaw = 0;
 unsigned long s_sMeterAvgStartMs = 0;
 unsigned long s_sMeterPeakStartMs = 0;
+bool s_powerWasDown = false;
+bool s_powerLongPressHandled = false;
+unsigned long s_powerPressStartMs = 0;
 
 constexpr uint8_t maskFor(Target target) {
   return static_cast<uint8_t>(target);
@@ -106,6 +110,9 @@ void begin(const Config& cfg) {
   s_sMeterPeak5sRaw = 0;
   s_sMeterAvgStartMs = millis();
   s_sMeterPeakStartMs = s_sMeterAvgStartMs;
+  s_powerWasDown = false;
+  s_powerLongPressHandled = false;
+  s_powerPressStartMs = 0;
 
   if (s_cfg.sMeterPin >= 0) {
     pinMode(static_cast<uint8_t>(s_cfg.sMeterPin), INPUT);
@@ -148,6 +155,31 @@ void update() {
   if (PushButtons::pressed(PushButtons::ButtonId::Fn)) {
     enqueue(CommandType::SaveSettings, maskFor(Target::Controller));
   }
+
+  const unsigned long now = millis();
+  const bool powerDown = PushButtons::isDown(PushButtons::ButtonId::Power);
+  if (powerDown && !s_powerWasDown) {
+    s_powerWasDown = true;
+    s_powerLongPressHandled = false;
+    s_powerPressStartMs = now;
+  }
+
+  if (powerDown && s_powerWasDown && !s_powerLongPressHandled) {
+    if ((now - s_powerPressStartMs) >= kPowerToggleHoldMs) {
+      enqueue(CommandType::PowerLongPress, maskFor(Target::Controller));
+      s_powerLongPressHandled = true;
+    }
+  }
+
+  if (!powerDown && s_powerWasDown) {
+    if (!s_powerLongPressHandled) {
+      enqueue(CommandType::PowerShortPress, maskFor(Target::Controller));
+    }
+    s_powerWasDown = false;
+    s_powerLongPressHandled = false;
+    s_powerPressStartMs = 0;
+  }
+
   if (PushButtons::pressed(PushButtons::ButtonId::TxRx)) {
     enqueue(CommandType::ToggleTxRx, maskFor(Target::AllBoards));
   }
@@ -176,6 +208,8 @@ const char* commandName(CommandType type) {
     case CommandType::CycleStep: return "CycleStep";
     case CommandType::SaveSettings: return "SaveSettings";
     case CommandType::ToggleTxRx: return "ToggleTxRx";
+    case CommandType::PowerShortPress: return "PowerShortPress";
+    case CommandType::PowerLongPress: return "PowerLongPress";
     case CommandType::None:
     default:
       return "None";

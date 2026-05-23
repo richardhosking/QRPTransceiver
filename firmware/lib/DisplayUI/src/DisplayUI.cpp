@@ -165,6 +165,20 @@ void updateSMeterDisplay(uint16_t averageRaw, uint16_t peakRaw) {
   s_tft.drawFastVLine(peakX, kSMeterBarY + 1, kSMeterBarH - 2, ILI9341_RED);
 }
 
+void enterLowPower() {
+  s_tft.writeCommand(ILI9341_DISPOFF);
+  delay(10);
+  s_tft.writeCommand(ILI9341_SLPIN);
+  delay(120);
+}
+
+void exitLowPower() {
+  s_tft.writeCommand(ILI9341_SLPOUT);
+  delay(120);
+  s_tft.writeCommand(ILI9341_DISPON);
+  delay(10);
+}
+
 const char* modeName(Mode m) {
   switch (m) {
     case Mode::LSB: return "LSB";

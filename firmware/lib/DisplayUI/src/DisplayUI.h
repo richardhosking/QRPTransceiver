@@ -37,6 +37,8 @@ void drawSplashScreen();
 void drawMainScreen();
 void updateFrequencyDisplay(uint64_t vfoFreq, Mode currentMode);
 void updateSMeterDisplay(uint16_t averageRaw, uint16_t peakRaw);
+void enterLowPower();
+void exitLowPower();
 const char* modeName(Mode m);
 
 } // namespace DisplayUI

@@ -104,6 +104,11 @@ Path: src/main.cpp
 - PlatformIO builds were repeatedly run after major changes.
 - Final state reported successful compilation.
 
+## Documentation Added
+- Added power latch circuit documentation for hardware power control:
+  - POWER_SWITCH_CIRCUIT.txt
+  - Covers short-press power-on, long-press power-off, and firmware POWER_HOLD behavior.
+
 ## Recommended Bench Bring-Up Order
 1. Verify I2C device detection at 0x60, 0x61, and 0x20.
 2. Verify RX/TX mute logic on physical lines.

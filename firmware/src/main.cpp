@@ -88,6 +88,7 @@ static Mode g_bandMode[kBandCount] = {
 static uint8_t g_bandIndex = 1;
 static bool g_settingsDirty = false;
 static bool g_txModeActive = false;
+static bool g_softPowerOff = false;
 
 // ── Flash-backed settings ────────────────────────────────────────────────────
 static constexpr uint32_t kSettingsMagic = 0x51525033UL; // "QRP3"
@@ -353,6 +354,55 @@ static void applyVfo() {
   DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
 }
 
+static void setDisplayBacklight(bool on) {
+  digitalWrite(DisplayUI::TFT_BL, on ? HIGH : LOW);
+}
+
+static void enterSoftPowerOff() {
+  if (g_softPowerOff) {
+    return;
+  }
+
+  DBG_PORT.println("[PWR] Shutdown requested");
+  saveSettingsIfDirty("Power down");
+
+  g_txModeActive = false;
+  BoardControl::setMute(BoardControl::MuteOutput::RxMute, true);
+  BoardControl::setMute(BoardControl::MuteOutput::SsbMute, true);
+  BoardControl::setMute(BoardControl::MuteOutput::CwMute, true);
+
+  SI5351Control::enableOutput(SI5351Control::Device::Rx, false);
+  SI5351Control::enableOutput(SI5351Control::Device::Tx, false);
+
+  BandFilterControl::setFilterIndex(0);
+  DisplayUI::enterLowPower();
+  setDisplayBacklight(false);
+  digitalWrite(LED_BUILTIN, LOW);
+
+  g_softPowerOff = true;
+  DBG_PORT.println("[PWR] Soft power OFF (short POWER press to wake)");
+}
+
+static void exitSoftPowerOff() {
+  if (!g_softPowerOff) {
+    return;
+  }
+
+  DBG_PORT.println("[PWR] Wake requested");
+  setDisplayBacklight(true);
+  DisplayUI::exitLowPower();
+  DisplayUI::drawMainScreen();
+
+  SI5351Control::enableOutput(SI5351Control::Device::Rx, true);
+  SI5351Control::enableOutput(SI5351Control::Device::Tx, false);
+  applyBandFilter();
+  applyMuteOutputs();
+  applyVfo();
+
+  g_softPowerOff = false;
+  DBG_PORT.println("[PWR] Soft power ON");
+}
+
 static void cycleMode() {
   switch (currentMode) {
     case Mode::LSB:  currentMode = Mode::USB;  break;
@@ -512,9 +562,9 @@ void setup() {
   RotaryInput::setStepHz(kStepTableHz[g_stepIndex]);
   DBG_PORT.println("[ENC] Ready (A=GP2 B=GP3 BTN=GP6)");
 
-  // Push buttons for functions (MODE=GP7, BAND=GP8, STEP=GP9, FN/SAVE=GP10, TX/RX=GP11)
-  PushButtons::begin({7, 8, 9, 10, 11, true, 25});
-  DBG_PORT.println("[BTN] Ready (MODE=GP7 BAND=GP8 STEP=GP9 FN/SAVE=GP10 TX/RX=GP11)");
+  // Push buttons for functions (MODE=GP7, BAND=GP8, STEP=GP9, FN/SAVE=GP10, TX/RX=GP11, POWER=GP15)
+  PushButtons::begin({7, 8, 9, 10, 11, 15, true, 25});
+  DBG_PORT.println("[BTN] Ready (MODE=GP7 BAND=GP8 STEP=GP9 FN/SAVE=GP10 TX/RX=GP11 POWER=GP15)");
   DBG_PORT.println("[SAVE] Press FN/SAVE to store current band/frequency/mode/step");
 
   BoardControl::begin();
@@ -532,6 +582,24 @@ void setup() {
 
 // ── Main loop ────────────────────────────────────────────────────────────────
 void loop() {
+  BoardControl::update();
+
+  if (g_softPowerOff) {
+    BoardControl::Command offCommand{};
+    while (BoardControl::read(offCommand)) {
+      if (offCommand.type == BoardControl::CommandType::PowerShortPress) {
+        exitSoftPowerOff();
+      }
+    }
+
+#if defined(__arm__) || defined(__thumb__)
+    __WFI();
+#else
+    delay(20);
+#endif
+    return;
+  }
+
   static unsigned long lastBeat = 0;
   if (millis() - lastBeat >= 1000) {
     lastBeat = millis();
@@ -555,8 +623,6 @@ void loop() {
     DisplayUI::updateSMeterDisplay(BoardControl::readSMeterAveragedRaw(),
                                    BoardControl::readSMeterPeak5sRaw());
   }
-
-  BoardControl::update();
 
   BoardControl::Command command{};
   while (BoardControl::read(command)) {
@@ -593,6 +659,12 @@ void loop() {
                                         : "OFF (RX mode mutes restored)");
         break;
       }
+      case BoardControl::CommandType::PowerLongPress:
+        enterSoftPowerOff();
+        break;
+      case BoardControl::CommandType::PowerShortPress:
+        // Short POWER presses are only used for wake while in soft-off state.
+        break;
       case BoardControl::CommandType::None:
       default:
         break;

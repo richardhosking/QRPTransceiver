@@ -4,11 +4,13 @@
 
 namespace PushButtons {
 
-static Config s_cfg{7, 8, 9, -1, 11, true, 25};
-static bool s_raw[5] = {false, false, false, false, false};
-static bool s_stable[5] = {false, false, false, false, false};
-static bool s_edgePress[5] = {false, false, false, false, false};
-static unsigned long s_lastChangeMs[5] = {0, 0, 0, 0, 0};
+static constexpr uint8_t kButtonCount = static_cast<uint8_t>(ButtonId::Count);
+static Config s_cfg{7, 8, 9, -1, 11, 15, true, 25};
+static bool s_raw[kButtonCount] = {false, false, false, false, false, false};
+static bool s_stable[kButtonCount] = {false, false, false, false, false, false};
+static bool s_edgePress[kButtonCount] = {false, false, false, false, false, false};
+static unsigned long s_lastChangeMs[kButtonCount] = {0, 0, 0, 0, 0, 0};
+static unsigned long s_pressStartMs[kButtonCount] = {0, 0, 0, 0, 0, 0};
 
 static int8_t pinFor(ButtonId id) {
   switch (id) {
@@ -17,6 +19,7 @@ static int8_t pinFor(ButtonId id) {
     case ButtonId::Step: return s_cfg.stepPin;
     case ButtonId::Fn:   return s_cfg.fnPin;
     case ButtonId::TxRx: return s_cfg.txRxPin;
+    case ButtonId::Power:return s_cfg.powerPin;
     default:             return -1;
   }
 }
@@ -38,9 +41,11 @@ void begin(const Config& cfg) {
       const bool v = readPhysical(pin);
       s_raw[i] = v;
       s_stable[i] = v;
+      s_pressStartMs[i] = v ? millis() : 0;
     } else {
       s_raw[i] = false;
       s_stable[i] = false;
+      s_pressStartMs[i] = 0;
     }
     s_edgePress[i] = false;
     s_lastChangeMs[i] = millis();
@@ -63,7 +68,10 @@ void update() {
     if ((now - s_lastChangeMs[i]) >= s_cfg.debounceMs && s_stable[i] != s_raw[i]) {
       s_stable[i] = s_raw[i];
       if (s_stable[i]) {
+        s_pressStartMs[i] = now;
         s_edgePress[i] = true;
+      } else {
+        s_pressStartMs[i] = 0;
       }
     }
   }
@@ -74,6 +82,21 @@ bool pressed(ButtonId id) {
   const bool hit = s_edgePress[idx];
   s_edgePress[idx] = false;
   return hit;
+}
+
+bool isDown(ButtonId id) {
+  const uint8_t idx = static_cast<uint8_t>(id);
+  return s_stable[idx];
+}
+
+uint32_t downDurationMs(ButtonId id) {
+  const uint8_t idx = static_cast<uint8_t>(id);
+  if (!s_stable[idx] || s_pressStartMs[idx] == 0) {
+    return 0;
+  }
+
+  const unsigned long now = millis();
+  return static_cast<uint32_t>(now - s_pressStartMs[idx]);
 }
 
 } // namespace PushButtons
