@@ -1,0 +1,21 @@
+Push Sequence Documentation
+Date: 2026-05-23
+Repo Path: /home/richard/Desktop/QRPTransceiver/QRPTransceiver/firmware
+
+Requested commit comment:
+Power cicuit in KICAD
+
+Commands used:
+1) git status --porcelain
+2) git branch --show-current
+3) git remote -v
+4) git add -A
+5) git commit -m "Power cicuit in KICAD"
+6) git push origin main
+
+Notes:
+- Step 1 checks for pending file changes.
+- Steps 2-3 confirm branch and remote target before push.
+- Step 4 stages all current changes.
+- Step 5 creates the commit with the requested comment.
+- Step 6 pushes the commit to GitHub.
