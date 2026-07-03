@@ -2,8 +2,8 @@
 main.cpp for QRP transceiver V3 with Raspberry Pi Pico,
  SI5351 local oscillator and ILI9341 SPI display.
 Using VSCode IDE with PlatformIO extension for development and upload.
-Rotary encoder tuning with push button, plus 3 additional push buttons for mode/band/step.
-Display, rotary, push buttons and SI5351 code abstracyted into libraries
+Rotary encoder tuning with push button for frequency step, plus 3 additional push buttons for mode/band/misc
+Display, rotary, push buttons and SI5351 code abstracted into libraries
 */
 
 #include <Arduino.h>
@@ -33,27 +33,35 @@ using DisplayUI::Mode;
 // SI5351 calibration (ppb):
 // fine trim from measured 7,100,900 Hz at 7,100,000 Hz setpoint
 // error = +900 Hz (~+126.8 ppm), so reduce magnitude of negative correction.
-static constexpr int32_t SI5351_CORRECTION_PPB = -4680000;
+// Temporary correction tuned to bring the measured carrier close to the indicated frequency.
+static constexpr int32_t SI5351_CORRECTION_PPB = -4610000;
 static constexpr uint8_t SI5351_RX_I2C_ADDR = 0x60;
 static constexpr uint8_t SI5351_TX_I2C_ADDR = 0x61;
 static constexpr int32_t CW_PITCH_HZ = 700;
+// S-meter input is inverted (higher voltage = weaker signal).
+// Set the meter floor around 3.0V input:
+// rawAdc(3.0V) ~= 4095 * (3.0 / 3.3) ~= 3723, so inverted sample ~= 4095 - 3723 ~= 372.
+// Values at and below this are forced to zero before gain/log shaping.
+static constexpr uint16_t S_METER_ZERO_RAW = 372;
+static constexpr uint16_t S_METER_GAIN_PERMILLE = 1220;
+static constexpr bool S_METER_LOG_RESPONSE = true;
 
-// ── VFO state ────────────────────────────────────────────────────────────────
-uint64_t vfoFreq     = 1825000UL;   // current VFO frequency in Hz
-Mode     currentMode = Mode::LSB;
+// ── initial VFO state ────────────────────────────────────────────────────────────────
+uint64_t vfoFreq     = 14200000UL;   // initial VFO frequency in Hz
+Mode     currentMode = Mode::USB;
 static constexpr uint64_t VFO_MIN_HZ = 1000000ULL;
 static constexpr uint64_t VFO_MAX_HZ = 54000000ULL;
 
 static const int32_t kStepTableHz[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
 static constexpr size_t kStepCount = sizeof(kStepTableHz) / sizeof(kStepTableHz[0]);
-static uint8_t g_stepIndex = 2; // default 100 Hz
+static uint8_t g_stepIndex = 3; // default 1000 Hz
 
 static const uint64_t kBandDefaultHz[] = {
-  1900000ULL,   // 160m
+  1825900ULL,   // 160m
   3575000ULL,   // 80m
   7067000ULL,   // 40m
   10136000ULL,  // 30m
-  14074000ULL,  // 20m
+  14200000ULL,  // 20m
   18100000ULL,  // 17m
   21074000ULL,  // 15m
   24915000ULL,  // 12m
@@ -74,21 +82,23 @@ static const uint8_t kBandFilterCode[kBandCount] = {
   9  // 6m
 };
 static const Mode kBandDefaultMode[kBandCount] = {
-  Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB,
-  Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB
+  Mode::LSB, Mode::LSB, Mode::LSB, Mode::USB, Mode::USB,
+  Mode::USB, Mode::USB, Mode::USB, Mode::USB, Mode::WSPR
 };
 static uint64_t g_bandFreqHz[kBandCount] = {
-  1900000ULL, 3575000ULL, 7067000ULL, 10136000ULL, 14074000ULL,
+  1825900ULL, 3575000ULL, 7067000ULL, 10136000ULL, 14200000ULL,
   18100000ULL, 21074000ULL, 24915000ULL, 28074000ULL, 50313000ULL
 };
 static Mode g_bandMode[kBandCount] = {
-  Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB,
-  Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB, Mode::LSB
+  Mode::LSB, Mode::LSB, Mode::LSB, Mode::USB, Mode::USB,
+  Mode::USB, Mode::USB, Mode::USB, Mode::USB, Mode::WSPR
 };
 static uint8_t g_bandIndex = 1;
 static bool g_settingsDirty = false;
 static bool g_txModeActive = false;
 static bool g_softPowerOff = false;
+static bool g_frequencyDisplayDirty = false;
+static unsigned long g_lastTuneActivityMs = 0;
 
 // ── Flash-backed settings ────────────────────────────────────────────────────
 static constexpr uint32_t kSettingsMagic = 0x51525033UL; // "QRP3"
@@ -174,10 +184,19 @@ static void markSettingsDirty() {
   g_settingsDirty = true;
 }
 
+static bool isFrequencyValidForBand(size_t bandIndex, uint64_t hz) {
+  if (bandIndex >= SI5351Control::kTxBandLimitCount) {
+    return false;
+  }
+
+  const auto& range = SI5351Control::kTxBandLimitsHz[bandIndex];
+  return hz >= range.low && hz <= range.high;
+}
+
 static void loadRecordIntoRuntime(const SettingsRecord& record) {
   for (size_t i = 0; i < kBandCount; ++i) {
     const uint64_t candidate = record.bandFreqHz[i];
-    g_bandFreqHz[i] = (candidate >= VFO_MIN_HZ && candidate <= VFO_MAX_HZ)
+    g_bandFreqHz[i] = isFrequencyValidForBand(i, candidate)
       ? candidate
       : kBandDefaultHz[i];
 
@@ -348,10 +367,46 @@ static void applyBandFilter() {
   DBG_PORT.println(BandFilterControl::currentFilterIndex());
 }
 
-static void applyVfo() {
+static void applyVfo(bool liveRetune = true, bool updateDisplay = true) {
   const uint64_t loHz = loFrequencyForMode(vfoFreq, currentMode);
-  SI5351Control::setQuadrature90(SI5351Control::Device::Rx, loHz, reverseQuadratureForMode(currentMode));
-  DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
+
+  // Briefly mute RX audio while the SI5351 is being retuned.
+  // The clock chip can be reprogrammed live, but PLL/output resets create
+  // audible clicks if the analog chain is left unmuted.
+  BoardControl::setMute(BoardControl::MuteOutput::RxMute, true);
+  delayMicroseconds(150);
+
+  SI5351Control::setQuadrature90(SI5351Control::Device::Rx,
+                                 loHz,
+                                 reverseQuadratureForMode(currentMode),
+                                 liveRetune);
+
+  delayMicroseconds(150);
+  applyMuteOutputs();
+  if (updateDisplay) {
+    DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
+    g_frequencyDisplayDirty = false;
+  }
+}
+
+static void flushPendingTuneDelta(int32_t tuneSteps, int8_t tuneDir) {
+  if (tuneSteps == 0) {
+    return;
+  }
+
+  int64_t next = static_cast<int64_t>(vfoFreq)
+    + static_cast<int64_t>(tuneSteps) * RotaryInput::stepHz();
+  if (next < static_cast<int64_t>(VFO_MIN_HZ)) next = static_cast<int64_t>(VFO_MIN_HZ);
+  if (next > static_cast<int64_t>(VFO_MAX_HZ)) next = static_cast<int64_t>(VFO_MAX_HZ);
+
+  vfoFreq = static_cast<uint64_t>(next);
+  g_bandFreqHz[g_bandIndex] = vfoFreq;
+  g_lastTuneActivityMs = millis();
+
+  applyVfo(true, false);
+  DisplayUI::flashTuneDirection(tuneDir);
+  g_frequencyDisplayDirty = true;
+  g_settingsDirty = true;
 }
 
 static void setDisplayBacklight(bool on) {
@@ -392,12 +447,13 @@ static void exitSoftPowerOff() {
   setDisplayBacklight(true);
   DisplayUI::exitLowPower();
   DisplayUI::drawMainScreen();
+  DisplayUI::updateStepDisplay(kStepTableHz[g_stepIndex]);
 
   SI5351Control::enableOutput(SI5351Control::Device::Rx, true);
   SI5351Control::enableOutput(SI5351Control::Device::Tx, false);
   applyBandFilter();
   applyMuteOutputs();
-  applyVfo();
+  applyVfo(false);
 
   g_softPowerOff = false;
   DBG_PORT.println("[PWR] Soft power ON");
@@ -412,7 +468,7 @@ static void cycleMode() {
     case Mode::WSPR: currentMode = Mode::LSB;  break;
     default:         currentMode = Mode::LSB;  break;
   }
-  applyVfo();
+  applyVfo(true);
   markSettingsDirty();
   applyMuteOutputs();
 
@@ -433,7 +489,7 @@ static void cycleBand() {
   vfoFreq = g_bandFreqHz[g_bandIndex];
   currentMode = g_bandMode[g_bandIndex];
   applyBandFilter();
-  applyVfo();
+  applyVfo(false);
   markSettingsDirty();
   saveSettingsIfDirty("Band change");
 }
@@ -441,17 +497,18 @@ static void cycleBand() {
 static void cycleStep() {
   g_stepIndex = (g_stepIndex + 1) % kStepCount;
   RotaryInput::setStepHz(kStepTableHz[g_stepIndex]);
+  DisplayUI::updateStepDisplay(kStepTableHz[g_stepIndex]);
+  DisplayUI::triggerStepDigitFlash(kStepTableHz[g_stepIndex], 500);
+  DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
   markSettingsDirty();
 }
 
 // ── Setup ────────────────────────────────────────────────────────────────────
 void setup() {
   DBG_PORT.begin(115200);
-  unsigned long serialWaitStart = millis();
-  while (!DBG_PORT && (millis() - serialWaitStart < 5000)) {
-    delay(10);
-  }
-  delay(1000);
+  // Boot directly on power-up without waiting for a USB serial host.
+  // Keep only a short rail-settle delay for peripherals.
+  delay(150);
   DBG_PORT.println("\n\n=== QRP Transceiver V3 starting ===");
   DBG_PORT.print("[FW] Built: ");
   DBG_PORT.print(__DATE__);
@@ -460,6 +517,7 @@ void setup() {
   DBG_PORT.print("[FW] Tag: ");
   DBG_PORT.println(FW_TAG);
   pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // Steady on after boot
 
   loadSettingsFromFlash();
 
@@ -526,6 +584,7 @@ void setup() {
   delay(1200);
   DisplayUI::drawMainScreen();
   DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
+  DisplayUI::updateStepDisplay(kStepTableHz[g_stepIndex]);
   DBG_PORT.println("[TFT] UI initialized");
 
   DBG_PORT.println("[SI5351] Initializing RX...\n");
@@ -558,16 +617,30 @@ void setup() {
   }
 
   // Rotary encoder input (default pins: A=GP2, B=GP3, BTN=GP6)
-  RotaryInput::begin({2, 3, 6, false, 100});
+  RotaryInput::begin({2, 3, 6, false, 1000});
   RotaryInput::setStepHz(kStepTableHz[g_stepIndex]);
   DBG_PORT.println("[ENC] Ready (A=GP2 B=GP3 BTN=GP6)");
 
-  // Push buttons for functions (MODE=GP7, BAND=GP8, STEP=GP9, FN/SAVE=GP10, TX/RX=GP11, POWER=GP15)
+  // Push buttons for functions (MODE=GP7, BAND=GP8, STEP=GP9, FN/MODE=GP10, TX/RX=GP11, POWER=GP15)
   PushButtons::begin({7, 8, 9, 10, 11, 15, true, 25});
-  DBG_PORT.println("[BTN] Ready (MODE=GP7 BAND=GP8 STEP=GP9 FN/SAVE=GP10 TX/RX=GP11 POWER=GP15)");
-  DBG_PORT.println("[SAVE] Press FN/SAVE to store current band/frequency/mode/step");
+  DBG_PORT.println("[BTN] Ready (MODE=GP7 BAND=GP8 STEP=GP9 FN/MODE=GP10 TX/RX=GP11 POWER=GP15)");
 
-  BoardControl::begin();
+  // BoardControl S-meter math uses a 12-bit ADC scale (0..4095).
+  // Ensure the core matches this; some cores default analogRead() to 10-bit.
+  analogReadResolution(12);
+
+  BoardControl::begin({
+    true,
+    12,
+    13,
+    14,
+    26,
+    BoardControl::kDefaultSMeterAveragePeriodMs,
+    BoardControl::kDefaultSMeterPeakPeriodMs,
+    S_METER_ZERO_RAW,
+    S_METER_GAIN_PERMILLE,
+    S_METER_LOG_RESPONSE
+  });
   DBG_PORT.println("[CTRL] Board command routing ready (RxMute=GP12 SsbMute=GP13 CwMute=GP14 SMeter=GP26)");
 
   // Band filter selection via I2C GPIO expander (default PCF8574 at 0x20).
@@ -600,12 +673,6 @@ void loop() {
     return;
   }
 
-  static unsigned long lastBeat = 0;
-  if (millis() - lastBeat >= 1000) {
-    lastBeat = millis();
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  }
-
   static unsigned long lastLog = 0;
   if (millis() - lastLog >= 5000) {
     lastLog = millis();
@@ -618,40 +685,60 @@ void loop() {
   }
 
   static unsigned long lastSMeterUiMs = 0;
-  if (millis() - lastSMeterUiMs >= 100) {
+  const unsigned long now = millis();
+  const bool tuningActive = static_cast<unsigned long>(now - g_lastTuneActivityMs) < 120UL;
+  if (!tuningActive && (now - lastSMeterUiMs >= 100)) {
     lastSMeterUiMs = millis();
     DisplayUI::updateSMeterDisplay(BoardControl::readSMeterAveragedRaw(),
                                    BoardControl::readSMeterPeak5sRaw());
   }
 
+  static unsigned long lastFreqUiMs = 0;
+  if (g_frequencyDisplayDirty && (now - lastFreqUiMs >= 40UL)) {
+    lastFreqUiMs = now;
+    DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
+    g_frequencyDisplayDirty = false;
+  }
+
+  static unsigned long lastFreqFlashUiMs = 0;
+  if (DisplayUI::isStepDigitFlashActive() && (millis() - lastFreqFlashUiMs >= 120)) {
+    lastFreqFlashUiMs = millis();
+    DisplayUI::updateFrequencyDisplay(vfoFreq, currentMode);
+  }
+
   BoardControl::Command command{};
+  int32_t pendingTuneSteps = 0;
+  int8_t pendingTuneDir = 0;
   while (BoardControl::read(command)) {
     switch (command.type) {
       case BoardControl::CommandType::TuneDelta: {
-        int64_t next = static_cast<int64_t>(vfoFreq)
-          + static_cast<int64_t>(command.value) * RotaryInput::stepHz();
-        if (next < static_cast<int64_t>(VFO_MIN_HZ)) next = static_cast<int64_t>(VFO_MIN_HZ);
-        if (next > static_cast<int64_t>(VFO_MAX_HZ)) next = static_cast<int64_t>(VFO_MAX_HZ);
-
-        vfoFreq = static_cast<uint64_t>(next);
-        g_bandFreqHz[g_bandIndex] = vfoFreq;
-        applyVfo();
-        g_settingsDirty = true;
+        pendingTuneSteps += command.value;
+        pendingTuneDir = (command.value > 0) ? +1 : -1;
         break;
       }
       case BoardControl::CommandType::CycleMode:
+        flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
+        pendingTuneSteps = 0;
         cycleMode();
         break;
       case BoardControl::CommandType::CycleBand:
+        flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
+        pendingTuneSteps = 0;
         cycleBand();
         break;
       case BoardControl::CommandType::CycleStep:
+        flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
+        pendingTuneSteps = 0;
         cycleStep();
         break;
       case BoardControl::CommandType::SaveSettings:
+        flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
+        pendingTuneSteps = 0;
         saveSettingsIfDirty("Fn button");
         break;
       case BoardControl::CommandType::ToggleTxRx: {
+        flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
+        pendingTuneSteps = 0;
         g_txModeActive = !g_txModeActive;
         applyMuteOutputs();
         DBG_PORT.print("[MUTE] TX mode ");
@@ -660,6 +747,8 @@ void loop() {
         break;
       }
       case BoardControl::CommandType::PowerLongPress:
+        flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
+        pendingTuneSteps = 0;
         enterSoftPowerOff();
         break;
       case BoardControl::CommandType::PowerShortPress:
@@ -670,4 +759,6 @@ void loop() {
         break;
     }
   }
+
+  flushPendingTuneDelta(pendingTuneSteps, pendingTuneDir);
 }

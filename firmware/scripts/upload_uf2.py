@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import os
 import shutil
+import subprocess
 import sys
+import time
 
 
 def find_rp2_mountpoint():
@@ -38,6 +40,51 @@ def find_rp2_mountpoint():
     return None
 
 
+def wait_for_rp2_mount(timeout_s=25.0, poll_s=0.25):
+    start = time.time()
+    while (time.time() - start) < timeout_s:
+        mountpoint = find_rp2_mountpoint()
+        if mountpoint:
+            return mountpoint
+        time.sleep(poll_s)
+    return None
+
+
+def find_picotool_exe():
+    # 1) User PATH
+    path_exe = shutil.which("picotool")
+    if path_exe:
+        return path_exe
+
+    # 2) Common PlatformIO package location
+    home = os.path.expanduser("~")
+    candidates = [
+        os.path.join(home, ".platformio", "packages", "tool-picotool", "picotool"),
+        os.path.join(home, ".platformio", "packages", "tool-picotool-rp2040earlephilhower", "picotool"),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+
+    return None
+
+
+def try_picotool_upload(uf2_path):
+    exe = find_picotool_exe()
+    if not exe:
+        print("[upload] picotool not found for fallback upload")
+        return False
+
+    print(f"[upload] Trying picotool fallback: {exe}")
+    try:
+        # -x: reboot after load
+        result = subprocess.run([exe, "load", "-x", uf2_path], check=False)
+        return result.returncode == 0
+    except Exception as ex:
+        print(f"[upload] picotool fallback failed: {ex}")
+        return False
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: upload_uf2.py <firmware.uf2>")
@@ -50,7 +97,16 @@ def main():
 
     mountpoint = find_rp2_mountpoint()
     if not mountpoint:
+        print("[upload] RPI-RP2 mount not found yet.")
+        print("[upload] Put Pico in BOOTSEL mode now... waiting up to 25s")
+        mountpoint = wait_for_rp2_mount(timeout_s=25.0, poll_s=0.25)
+
+    if not mountpoint:
         print("[upload] RPI-RP2 mount not found.")
+        print("[upload] Trying picotool fallback upload...")
+        if try_picotool_upload(uf2_path):
+            print("[upload] picotool upload complete")
+            return 0
         print("[upload] Put Pico in BOOTSEL mode, wait for disk mount, then retry.")
         return 1
 

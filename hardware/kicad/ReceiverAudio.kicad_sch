@@ -11591,7 +11591,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_0805_2012Metric"
+		(property "Footprint" "Diode_SMD:D_1206_3216Metric"
 			(at 262.89 36.83 0)
 			(effects
 				(font
@@ -11658,7 +11658,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_0805_2012Metric"
+		(property "Footprint" "Diode_SMD:D_1206_3216Metric"
 			(at 262.89 69.85 0)
 			(effects
 				(font
@@ -15240,7 +15240,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_0805_2012Metric"
+		(property "Footprint" "Diode_SMD:D_1206_3216Metric"
 			(at 151.13 179.07 0)
 			(effects
 				(font
@@ -16564,7 +16564,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_3x5.3"
+		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x4.9"
 			(at 142.24 157.48 0)
 			(effects
 				(font

@@ -6,6 +6,9 @@ namespace BoardControl {
 
 static constexpr uint16_t kDefaultSMeterAveragePeriodMs = 100;
 static constexpr uint16_t kDefaultSMeterPeakPeriodMs = 5000;
+static constexpr uint16_t kDefaultSMeterZeroRaw = 0;
+static constexpr uint16_t kDefaultSMeterGainPermille = 1000;
+static constexpr bool kDefaultSMeterUseLogResponse = false;
 
 enum class Target : uint8_t {
   None = 0,
@@ -48,6 +51,9 @@ struct Config {
   int8_t sMeterPin;
   uint16_t sMeterAveragePeriodMs;
   uint16_t sMeterPeakPeriodMs;
+  uint16_t sMeterZeroRaw;
+  uint16_t sMeterGainPermille;
+  bool sMeterUseLogResponse;
 };
 
 void begin(const Config& cfg = {
@@ -57,7 +63,10 @@ void begin(const Config& cfg = {
   14,
   26,
   kDefaultSMeterAveragePeriodMs,
-  kDefaultSMeterPeakPeriodMs
+  kDefaultSMeterPeakPeriodMs,
+  kDefaultSMeterZeroRaw,
+  kDefaultSMeterGainPermille,
+  kDefaultSMeterUseLogResponse
 });
 void update();
 bool read(Command& command);

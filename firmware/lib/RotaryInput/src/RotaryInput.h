@@ -12,7 +12,7 @@ struct Config {
   int32_t stepHz;        // Hz change per detent
 };
 
-void begin(const Config& cfg = {2, 3, -1, false, 100});
+void begin(const Config& cfg = {4, 5, 6, false, 1000});
 int32_t readDeltaSteps();
 bool buttonPressed();
 int32_t stepHz();

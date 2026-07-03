@@ -1,6 +1,7 @@
 #include "BoardControl.h"
 
 #include <Arduino.h>
+#include <math.h>
 #include <PushButtons.h>
 #include <RotaryInput.h>
 
@@ -18,7 +19,10 @@ Config s_cfg{
   14,
   26,
   kDefaultSMeterAveragePeriodMs,
-  kDefaultSMeterPeakPeriodMs
+  kDefaultSMeterPeakPeriodMs,
+  kDefaultSMeterZeroRaw,
+  kDefaultSMeterGainPermille,
+  kDefaultSMeterUseLogResponse
 };
 Command s_queue[kQueueCapacity]{};
 uint8_t s_head = 0;
@@ -66,7 +70,27 @@ void updateSMeter() {
   }
 
   const unsigned long now = millis();
-  const uint16_t sample = static_cast<uint16_t>(analogRead(static_cast<uint8_t>(s_cfg.sMeterPin)));
+  const uint16_t rawSample = static_cast<uint16_t>(analogRead(static_cast<uint8_t>(s_cfg.sMeterPin)));
+  uint32_t sample = static_cast<uint16_t>(4095U - rawSample);
+
+  if (sample <= s_cfg.sMeterZeroRaw) {
+    sample = 0;
+  } else {
+    sample -= s_cfg.sMeterZeroRaw;
+  }
+
+  sample = (sample * s_cfg.sMeterGainPermille) / 1000U;
+  if (sample > 4095U) {
+    sample = 4095U;
+  }
+
+  if (s_cfg.sMeterUseLogResponse) {
+    // Quasi-log response: expand low-level changes and compress high levels.
+    // sqrt(norm) approximates the visual response expected for S-meter behavior.
+    const float norm = static_cast<float>(sample) / 4095.0f;
+    sample = static_cast<uint32_t>(sqrtf(norm) * 4095.0f + 0.5f);
+  }
+
   s_sMeterLatestRaw = sample;
   s_sMeterAccum += sample;
   ++s_sMeterSampleCount;
@@ -139,8 +163,10 @@ void update() {
     enqueue(CommandType::TuneDelta, maskFor(Target::AllBoards), deltaSteps);
   }
 
-  if (s_cfg.mapEncoderButtonToMode && RotaryInput::buttonPressed()) {
-    enqueue(CommandType::CycleMode, maskFor(Target::AllBoards));
+  // Use encoder push as a STEP fallback control.
+  // MODE still has a dedicated front-panel button.
+  if (RotaryInput::buttonPressed()) {
+    enqueue(CommandType::CycleStep, maskFor(Target::AllBoards));
   }
 
   if (PushButtons::pressed(PushButtons::ButtonId::Mode)) {
@@ -153,7 +179,7 @@ void update() {
     enqueue(CommandType::CycleStep, maskFor(Target::AllBoards));
   }
   if (PushButtons::pressed(PushButtons::ButtonId::Fn)) {
-    enqueue(CommandType::SaveSettings, maskFor(Target::Controller));
+    enqueue(CommandType::CycleMode, maskFor(Target::AllBoards));
   }
 
   const unsigned long now = millis();
