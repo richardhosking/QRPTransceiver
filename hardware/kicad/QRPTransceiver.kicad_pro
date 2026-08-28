@@ -1227,15 +1227,23 @@
     ],
     [
       "00000000-0000-0000-0000-0000637ac238",
-      "Mixer"
+      "Frontend Mixer"
     ],
     [
       "00000000-0000-0000-0000-000062579414",
-      "Sheet62579414"
+      "ReceivePolyphase network"
     ],
     [
       "00000000-0000-0000-0000-00006280c94c",
-      "Sheet6280C94B"
+      "Receive Audio"
+    ],
+    [
+      "60ca8d6c-ee06-442c-af3d-0800548259e9",
+      "Controller"
+    ],
+    [
+      "9a6d582b-c4d9-4fa6-b112-fd760bb839e4",
+      "ExciterAudio"
     ]
   ],
   "text_variables": {}

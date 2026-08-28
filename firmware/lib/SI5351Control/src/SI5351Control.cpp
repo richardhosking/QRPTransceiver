@@ -9,6 +9,9 @@ namespace SI5351Control {
 struct DeviceState {
   Si5351* si5351;
   bool ready;
+  bool outputsEnabled;
+  uint8_t lowBandProfile;
+  bool lastReversePhase;
   uint64_t vfoHz;
   uint32_t xtalHz;
   uint8_t i2cAddress;
@@ -17,8 +20,8 @@ struct DeviceState {
 static Si5351 s_si5351Addr60(SI5351_BUS_BASE_ADDR);
 static Si5351 s_si5351Addr61(SI5351_BUS_BASE_ADDR + 1);
 static DeviceState s_deviceStates[] = {
-  {&s_si5351Addr60, false, 0, 25000000UL, SI5351_BUS_BASE_ADDR},
-  {&s_si5351Addr61, false, 0, 25000000UL, static_cast<uint8_t>(SI5351_BUS_BASE_ADDR + 1)}
+  {&s_si5351Addr60, false, true, 0, 0, 25000000UL, SI5351_BUS_BASE_ADDR},
+  {&s_si5351Addr61, false, false, 0, 0, 25000000UL, static_cast<uint8_t>(SI5351_BUS_BASE_ADDR + 1)}
 };
 
 // Low-band (below 7 MHz) empirical phase trims in phase-word steps
@@ -26,6 +29,11 @@ static DeviceState s_deviceStates[] = {
 // Keep 160m as reference from scope work; tune 80m by +/-1 if needed.
 static constexpr int8_t kLowBandPhaseTrim160m = 4;
 static constexpr int8_t kLowBandPhaseTrim80m = 0;
+// Diagnostic switch: force CLK1 off to isolate single-output spur behavior.
+static constexpr bool kDebugDisableClk1 = false;
+// Diagnostic switch: bypass quadrature/manual PLL path and run CLK0 only
+// through the library's set_freq() path.
+static constexpr bool kDebugSingleClockOnly = false;
 
 struct BandProfile {
   Band band;
@@ -48,7 +56,7 @@ static const BandProfile kBandProfiles[] = {
     {Band::B15M,  33, 0, 625000, 40, 0x00, 0x28, "15m"},
     {Band::B12M,  28, 0, 833333, 30, 0x00, 0x1E, "12m"},
     {Band::B10M,  28, 0, 1000000, 25, 0x00, 0x19, "10m"},
-  {Band::B6M,   30, 0, 1000000, 25, 0x00, 0x19, "6m"},
+  {Band::B6M,   28, 0, 1000000, 14, 0x00, 0x0E, "6m"},
 };
 
 static const BandProfile* findBandProfile(Band band) {
@@ -56,6 +64,61 @@ static const BandProfile* findBandProfile(Band band) {
     if (p.band == band) return &p;
   }
   return nullptr;
+}
+
+static bool bandProfileForFrequencyHz(uint64_t rfHz, uint8_t& profileOut, uint16_t& dividerOut) {
+  if (rfHz >= 1800000ULL && rfHz <= 2000000ULL) {
+    profileOut = 1;
+    dividerOut = 334;
+    return true;
+  }
+  if (rfHz >= 3500000ULL && rfHz <= 3800000ULL) {
+    profileOut = 2;
+    dividerOut = 172;
+    return true;
+  }
+  if (rfHz >= 7000000ULL && rfHz <= 7300000ULL) {
+    profileOut = 3;
+    dividerOut = 100;
+    return true;
+  }
+  if (rfHz >= 10100000ULL && rfHz <= 10150000ULL) {
+    profileOut = 4;
+    dividerOut = 80;
+    return true;
+  }
+  if (rfHz >= 14000000ULL && rfHz <= 14350000ULL) {
+    profileOut = 5;
+    dividerOut = 50;
+    return true;
+  }
+  if (rfHz >= 18068000ULL && rfHz <= 18168000ULL) {
+    profileOut = 6;
+    dividerOut = 40;
+    return true;
+  }
+  if (rfHz >= 21000000ULL && rfHz <= 21450000ULL) {
+    profileOut = 7;
+    dividerOut = 40;
+    return true;
+  }
+  if (rfHz >= 24890000ULL && rfHz <= 24990000ULL) {
+    profileOut = 8;
+    dividerOut = 30;
+    return true;
+  }
+  if (rfHz >= 28000000ULL && rfHz <= 29700000ULL) {
+    profileOut = 9;
+    dividerOut = 25;
+    return true;
+  }
+  if (rfHz >= 50000000ULL && rfHz <= 54000000ULL) {
+    profileOut = 10;
+    dividerOut = 14;
+    return true;
+  }
+
+  return false;
 }
 
 static uint64_t constrainTxFrequencyHz(uint64_t requestedHz) {
@@ -109,89 +172,6 @@ static uint64_t pllFreqCentiHz(const BandProfile& p, uint32_t xtalHz) {
   return (static_cast<uint64_t>(xtalHz) * 100ULL * num) / p.pllC;
 }
 
-static uint8_t rDivEnumForValue(uint16_t rDiv) {
-  switch (rDiv) {
-    case 1: return SI5351_OUTPUT_CLK_DIV_1;
-    case 2: return SI5351_OUTPUT_CLK_DIV_2;
-    case 4: return SI5351_OUTPUT_CLK_DIV_4;
-    case 8: return SI5351_OUTPUT_CLK_DIV_8;
-    case 16: return SI5351_OUTPUT_CLK_DIV_16;
-    case 32: return SI5351_OUTPUT_CLK_DIV_32;
-    case 64: return SI5351_OUTPUT_CLK_DIV_64;
-    case 128: return SI5351_OUTPUT_CLK_DIV_128;
-    default: return SI5351_OUTPUT_CLK_DIV_1;
-  }
-}
-
-static void programRDivForClock(Si5351& dev, enum si5351_clock clk, uint16_t rDiv) {
-  uint8_t regAddr = 0;
-  switch (clk) {
-    case SI5351_CLK0: regAddr = SI5351_CLK0_PARAMETERS + 2; break;
-    case SI5351_CLK1: regAddr = SI5351_CLK1_PARAMETERS + 2; break;
-    case SI5351_CLK2: regAddr = SI5351_CLK2_PARAMETERS + 2; break;
-    case SI5351_CLK3: regAddr = SI5351_CLK3_PARAMETERS + 2; break;
-    case SI5351_CLK4: regAddr = SI5351_CLK4_PARAMETERS + 2; break;
-    case SI5351_CLK5: regAddr = SI5351_CLK5_PARAMETERS + 2; break;
-    default: return;
-  }
-
-  uint8_t regVal = dev.si5351_read(regAddr);
-  regVal &= ~(0x7c); // Clear R divider and DIVBY4 bits
-  regVal |= static_cast<uint8_t>(rDivEnumForValue(rDiv) << SI5351_OUTPUT_CLK_DIV_SHIFT);
-  dev.si5351_write(regAddr, regVal);
-}
-
-static bool pickQuadratureDivider(uint64_t rfHz, uint16_t& dividerOut) {
-  // Need an even divider so phase register value == divider for +90 deg.
-  // Limit divider to <=126 so phase register fits 7 bits.
-  if (rfHz == 0) return false;
-
-  uint16_t best = 0;
-  uint64_t bestErr = UINT64_MAX;
-  for (uint16_t d = 8; d <= 126; d += 2) {
-    const uint64_t pll = rfHz * static_cast<uint64_t>(d);
-    if (pll < 600000000ULL || pll > 900000000ULL) continue;
-
-    // Prefer PLL close to 750 MHz.
-    const uint64_t err = (pll > 750000000ULL) ? (pll - 750000000ULL) : (750000000ULL - pll);
-    if (err < bestErr) {
-      bestErr = err;
-      best = d;
-    }
-  }
-
-  if (best == 0) return false;
-  dividerOut = best;
-  return true;
-}
-
-static int8_t lowBandPhaseTrimForRf(uint64_t rfHz) {
-  if (rfHz >= 1800000ULL && rfHz <= 2000000ULL) {
-    return kLowBandPhaseTrim160m;
-  }
-  if (rfHz >= 3500000ULL && rfHz <= 3800000ULL) {
-    return kLowBandPhaseTrim80m;
-  }
-  return 0;
-}
-
-static void delayHalfPeriodApprox(uint64_t freqHz) {
-  if (freqHz == 0) return;
-
-  // half-period(ns) = 1e9 / (2 * f) = 500000000 / f
-  const uint64_t halfNs = 500000000ULL / freqHz;
-  // RP2040 default core clock in this project.
-  static constexpr uint64_t kCoreHz = 133000000ULL;
-  // Convert ns to core cycles (rounded up).
-  const uint64_t cyclesTarget =
-      ((kCoreHz * halfNs) + 999999999ULL) / 1000000000ULL;
-
-  volatile uint32_t cycles = static_cast<uint32_t>(cyclesTarget > 0 ? cyclesTarget : 1ULL);
-  while (cycles--) {
-    __asm__ __volatile__("nop");
-  }
-}
-
 bool begin(const Config& cfg) {
   return beginDevice(Device::Rx, {SI5351_BUS_BASE_ADDR, cfg.xtalFreqHz, cfg.correctionPpb});
 }
@@ -215,8 +195,16 @@ bool beginDevice(Device device, const DeviceConfig& cfg) {
     return false;
   }
 
-  state.si5351->drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA);
-  state.si5351->drive_strength(SI5351_CLK1, SI5351_DRIVE_8MA);
+  // Explicitly disable spread-spectrum clocking (SSC).
+  // Some modules may power up with non-zero SSC registers; clear all params.
+  for (uint8_t reg = SI5351_SSC_PARAM0; reg <= SI5351_SSC_PARAM12; ++reg) {
+    state.si5351->si5351_write(reg, 0x00);
+  }
+
+  // Lower drive strength to reduce output-stage current steps that can couple
+  // into fixed-offset sidebands on some builds/layouts.
+  state.si5351->drive_strength(SI5351_CLK0, SI5351_DRIVE_4MA);
+  state.si5351->drive_strength(SI5351_CLK1, SI5351_DRIVE_4MA);
   state.si5351->set_clock_pwr(SI5351_CLK0, 1);
   state.si5351->set_clock_pwr(SI5351_CLK1, 1);
   state.si5351->set_clock_pwr(SI5351_CLK3, 0);
@@ -228,6 +216,9 @@ bool beginDevice(Device device, const DeviceConfig& cfg) {
   state.si5351->output_enable(SI5351_CLK1, 0);
   state.si5351->output_enable(SI5351_CLK2, 0);
   state.si5351->set_clock_pwr(SI5351_CLK2, 0);
+  state.outputsEnabled = (device != Device::Tx);
+  state.lowBandProfile = 0;
+  state.lastReversePhase = false;
   state.ready = true;
   return true;
 }
@@ -258,160 +249,79 @@ bool setQuadrature90(Device device, uint64_t rfHz, bool reversePhase, bool liveR
     rfHz = constrainTxFrequencyHz(rfHz);
   }
 
-  const bool useLiveRetune = liveRetune;
-
   DeviceState& state = stateForDevice(device);
   if (!state.ready || rfHz == 0) return false;
 
-  // Preferred path: direct in-chip 90° quadrature at RF output frequency.
-  uint16_t ratio = 0;
-  if (pickQuadratureDivider(rfHz, ratio)) {
-    const uint64_t pllCentiHz = rfHz * static_cast<uint64_t>(ratio) * 100ULL;
+  if (kDebugSingleClockOnly) {
     const uint64_t outCentiHz = rfHz * 100ULL;
-
-    // Ensure both clocks are powered when returning to normal quadrature bands.
-    state.si5351->set_clock_pwr(SI5351_CLK0, 1);
-    state.si5351->set_clock_pwr(SI5351_CLK1, 1);
-
-    if (!useLiveRetune) {
-      state.si5351->output_enable(SI5351_CLK0, 0);
-      state.si5351->output_enable(SI5351_CLK1, 0);
-    }
-
-    // Both clocks must share PLLA so that the phase offset registers produce
-    // a deterministic 90° relationship. With CLK1 on PLLB (library default)
-    // the two VCOs start at random relative phase after reset.
-    state.si5351->set_ms_source(SI5351_CLK0, SI5351_PLLA);
-    state.si5351->set_ms_source(SI5351_CLK1, SI5351_PLLA);
-
-    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
-    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
-
-    state.si5351->set_clock_invert(SI5351_CLK0, 0);
-    state.si5351->set_clock_invert(SI5351_CLK1, 0);
-    state.si5351->set_phase(SI5351_CLK0, reversePhase ? static_cast<uint8_t>(ratio) : 0);
-    state.si5351->set_phase(SI5351_CLK1, reversePhase ? 0 : static_cast<uint8_t>(ratio));
-
-    if (!useLiveRetune) {
-      state.si5351->pll_reset(SI5351_PLLA);
-      state.si5351->output_enable(SI5351_CLK0, 1);
-      state.si5351->output_enable(SI5351_CLK1, 1);
-    }
-
-    state.vfoHz = rfHz;
-    return true;
-  }
-
-  // 160m/80m special mode: single intermediate output on CLK0 only.
-  // 160m -> 7 MHz, 80m -> 14 MHz. CLK1 is disabled.
-  if (rfHz >= 1800000ULL && rfHz <= 2000000ULL) {
-    state.si5351->set_clock_pwr(SI5351_CLK0, 1);
-    // Force integer synthesis: PLL=700 MHz, MS=100 -> 7 MHz.
-    state.si5351->set_ms_source(SI5351_CLK0, SI5351_PLLA);
-    state.si5351->set_phase(SI5351_CLK0, 0); // Clear any stale phase offset from previous band
-    state.si5351->set_freq_manual(700000000ULL, 70000000000ULL, SI5351_CLK0); // 7 MHz in centi-Hz
-    state.si5351->output_enable(SI5351_CLK0, 1);
     state.si5351->output_enable(SI5351_CLK1, 0);
     state.si5351->set_clock_pwr(SI5351_CLK1, 0);
-    state.vfoHz = rfHz;
-    return true;
-  }
-  if (rfHz >= 3500000ULL && rfHz <= 3800000ULL) {
     state.si5351->set_clock_pwr(SI5351_CLK0, 1);
-    // Force integer synthesis: PLL=700 MHz, MS=50 -> 14 MHz.
-    state.si5351->set_ms_source(SI5351_CLK0, SI5351_PLLA);
-    state.si5351->set_phase(SI5351_CLK0, 0); // Clear any stale phase offset from previous band
-    state.si5351->set_freq_manual(1400000000ULL, 70000000000ULL, SI5351_CLK0); // 14 MHz in centi-Hz
-    state.si5351->output_enable(SI5351_CLK0, 1);
-    state.si5351->output_enable(SI5351_CLK1, 0);
-    state.si5351->set_clock_pwr(SI5351_CLK1, 0);
+    state.si5351->output_enable(SI5351_CLK0, state.outputsEnabled ? 1 : 0);
+    state.si5351->set_freq(outCentiHz, SI5351_CLK0);
+    state.lowBandProfile = 0;
+    state.lastReversePhase = reversePhase;
     state.vfoHz = rfHz;
     return true;
   }
 
-  // Low-band exact integer-N quadrature:
-  // Generate 4x RF intermediate and use exact integer MS divider N (multiple of 4):
-  //   PLL = N x (4 x rfHz)
-  //   phase word = N/4 => (N/4)/N x 360 = 90 degrees exactly
-  // Keep N fixed per low band to prevent phase-word hopping while tuning.
-  const uint64_t intermHz = rfHz * 4ULL;
-  if (intermHz < 2000000ULL) return false;
-
-  uint32_t bestN = 0;
-  // 160m: N=104 gives PLL around 748.8 MHz near 1.8 MHz.
-  if (rfHz >= 1800000ULL && rfHz <= 2000000ULL) {
-    bestN = 104;
-  // 80m: N=52 gives PLL in-range across band.
-  } else if (rfHz >= 3500000ULL && rfHz <= 3800000ULL) {
-    bestN = 52;
+  // Preferred quadrature path on all bands: keep the multisynth divider fixed
+  // per amateur band and retune by changing PLL (N) only. This proved quieter
+  // during tuning than the direct phase-register path once SSC was disabled.
+  const uint64_t outCentiHz = rfHz * 100ULL;
+  uint8_t nextLowBandProfile = 3;
+  uint16_t fixedDivider = 120;
+  if (!bandProfileForFrequencyHz(rfHz, nextLowBandProfile, fixedDivider)) {
+    return false;
   }
+  const uint64_t pllCentiHz = rfHz * static_cast<uint64_t>(fixedDivider) * 100ULL;
+  if (pllCentiHz < 60000000000ULL || pllCentiHz > 90000000000ULL) return false;
+  const bool firstSelectInBand = (state.lowBandProfile != nextLowBandProfile) ||
+                                  (state.lastReversePhase != reversePhase);
 
-  // Fallback search for any other low-band frequency.
-  if (bestN == 0) {
-    static constexpr uint64_t kTargetPll = 750000000ULL;
-    uint64_t bestErr = UINT64_MAX;
-    for (uint32_t n = 8; n <= 124; n += 4) {
-      const uint64_t pll = static_cast<uint64_t>(n) * intermHz;
-      if (pll < 600000000ULL || pll > 900000000ULL) continue;
-      const uint64_t err = (pll > kTargetPll) ? (pll - kTargetPll) : (kTargetPll - pll);
-      if (err < bestErr) {
-        bestErr = err;
-        bestN = n;
-      }
-    }
-  }
-  if (bestN == 0) return false;
-
-  // Ensure both clocks are powered when using dual-output low-band path.
+  // Keep both clocks powered and on a single PLLA.
   state.si5351->set_clock_pwr(SI5351_CLK0, 1);
   state.si5351->set_clock_pwr(SI5351_CLK1, 1);
-
-  const uint64_t pllHz   = static_cast<uint64_t>(bestN) * intermHz;
-  const uint64_t pllCentiHz = pllHz * 100ULL;
-  const uint64_t outCentiHz = intermHz * 100ULL;
-
-  // Disable outputs only for full retune/band-change path.
-  if (!useLiveRetune) {
-    state.si5351->output_enable(SI5351_CLK0, 0);
-    state.si5351->output_enable(SI5351_CLK1, 0);
-  }
-
-  // Use a single PLL (PLLA) for both outputs to guarantee matched frequency.
   state.si5351->set_ms_source(SI5351_CLK0, SI5351_PLLA);
   state.si5351->set_ms_source(SI5351_CLK1, SI5351_PLLA);
 
-  // Both outputs same frequency from the same exact integer-N setup.
-  state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
-  state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
+  if (firstSelectInBand) {
+    // Entry routine (once per band/mode entry):
+    // disable outputs, sync, then run a brief +1 Hz phase-kick routine.
+    state.si5351->output_enable(SI5351_CLK0, 0);
+    state.si5351->output_enable(SI5351_CLK1, 0);
 
-  // Enable divide-by-4 on both outputs so output frequency = RF.
-  // Keep the MS/PLL running at 4x intermediate and divide at output stage.
-  programRDivForClock(*state.si5351, SI5351_CLK0, 4);
-  programRDivForClock(*state.si5351, SI5351_CLK1, 4);
+    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
+    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
+    state.si5351->pll_reset(SI5351_PLLA);
 
-  state.si5351->set_clock_invert(SI5351_CLK0, 0);
-  state.si5351->set_clock_invert(SI5351_CLK1, 0);
-  
-  // Force both outputs in phase for external divider tests.
-  // Keep phase-offset registers 165/166 at zero.
-  (void)reversePhase;
-  state.si5351->set_phase(SI5351_CLK0, 0);
-  state.si5351->set_phase(SI5351_CLK1, 0);
-  state.si5351->si5351_write(SI5351_CLK0_PHASE_OFFSET, 0x00); // Reg 165
-  state.si5351->si5351_write(SI5351_CLK1_PHASE_OFFSET, 0x00); // Reg 166
+    if (state.outputsEnabled) {
+      state.si5351->output_enable(SI5351_CLK0, 1);
+      state.si5351->output_enable(SI5351_CLK1, kDebugDisableClk1 ? 0 : 1);
+      if (kDebugDisableClk1) {
+        state.si5351->set_clock_pwr(SI5351_CLK1, 0);
+      }
 
-  if (!useLiveRetune) {
-    state.si5351->output_enable(SI5351_CLK0, 1);
-    state.si5351->output_enable(SI5351_CLK1, 1);
+      // Frequency-shift phase kick: move CLK1 by +25 Hz briefly, then restore.
+      // Phase accumulates at 360°/s per Hz of offset, so 25 Hz for 10 ms = 90°.
+      // Adjust kPhaseKickMs to trim the final phase angle (more ms = more phase).
+      constexpr uint64_t kPhaseKickDeltaCentiHz = 2410ULL; // 24.70 Hz × 6 ms ≈ 90°
+      constexpr uint16_t kPhaseKickMs = 6;
+      // Negate the kick for USB vs LSB to produce +90° or -90°.
+      const uint64_t kickFreq = reversePhase ? (outCentiHz - kPhaseKickDeltaCentiHz)
+                                             : (outCentiHz + kPhaseKickDeltaCentiHz);
+      state.si5351->set_freq_manual(kickFreq, pllCentiHz, SI5351_CLK1);
+      delay(kPhaseKickMs);
+      state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
+    }
 
-    // Reset both PLLs simultaneously as final synchronization step
-    // Register 177 (0xB1) with 0xA0 = 0b10100000 resets both PLLA and PLLB at once
-    state.si5351->si5351_write(0xB1, 0xA0);
-
-    // Delay by approximately half of intermediate period, then pulse PLLB reset.
-    // Example: at 1.8 MHz RF, intermediate is 7.2 MHz and half-period is ~69.4 ns.
-    delayHalfPeriodApprox(intermHz);
-    state.si5351->si5351_write(0xB1, 0x40);
+    state.lowBandProfile = nextLowBandProfile;
+    state.lastReversePhase = reversePhase;
+  } else {
+    // Live tuning updates in-band: no PLL reset, no power-down.
+    // Divider remains fixed for this band; PLL N changes with rfHz.
+    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK0);
+    state.si5351->set_freq_manual(outCentiHz, pllCentiHz, SI5351_CLK1);
   }
 
   state.vfoHz = rfHz;
@@ -459,7 +369,10 @@ void enableOutput(Device device, bool enable) {
   DeviceState& state = stateForDevice(device);
   if (!state.ready) return;
   state.si5351->output_enable(SI5351_CLK0, enable ? 1 : 0);
-  state.si5351->output_enable(SI5351_CLK1, enable ? 1 : 0);
+  state.si5351->output_enable(SI5351_CLK1, (enable && !kDebugDisableClk1) ? 1 : 0);
+  state.si5351->set_clock_pwr(SI5351_CLK0, enable ? 1 : 0);
+  state.si5351->set_clock_pwr(SI5351_CLK1, (enable && !kDebugDisableClk1) ? 1 : 0);
+  state.outputsEnabled = enable;
 }
 
 bool isReady() {

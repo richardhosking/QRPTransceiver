@@ -17,7 +17,7 @@
 			(color 0 0 0 0.0000)
 		)
 		(uuid "00000000-0000-0000-0000-000062579414")
-		(property "Sheetname" "Sheet62579414"
+		(property "Sheetname" "ReceivePolyphase network"
 			(at 102.87 27.2284 0)
 			(effects
 				(font
@@ -26,7 +26,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "polyphase.kicad_sch"
+		(property "Sheetfile" "receivePolyphase.kicad_sch"
 			(at 102.87 65.3546 0)
 			(effects
 				(font
@@ -55,7 +55,7 @@
 			(color 0 0 0 0.0000)
 		)
 		(uuid "00000000-0000-0000-0000-00006280c94c")
-		(property "Sheetname" "Sheet6280C94B"
+		(property "Sheetname" "Receive Audio"
 			(at 185.42 28.4984 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 			(color 0 0 0 0.0000)
 		)
 		(uuid "00000000-0000-0000-0000-0000637ac238")
-		(property "Sheetname" "Mixer"
+		(property "Sheetname" "Frontend Mixer"
 			(at 26.67 25.9584 0)
 			(effects
 				(font
@@ -102,7 +102,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "file637AC237.kicad_sch"
+		(property "Sheetfile" "FrontendMixer.kicad_sch"
 			(at 26.67 66.6246 0)
 			(effects
 				(font
@@ -115,6 +115,82 @@
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf"
 					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 81.28)
+		(size 60.96 46.99)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "60ca8d6c-ee06-442c-af3d-0800548259e9")
+		(property "Sheetname" "Controller"
+			(at 25.4 80.5684 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "controller.kicad_sch"
+			(at 25.4 128.8546 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "QRPTransceiver"
+				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 111.76 80.01)
+		(size 59.69 48.26)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "9a6d582b-c4d9-4fa6-b112-fd760bb839e4")
+		(property "Sheetname" "ExciterAudio"
+			(at 111.76 79.2984 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "exciterAudio.kicad_sch"
+			(at 111.76 128.8546 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "QRPTransceiver"
+				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf"
+					(page "6")
 				)
 			)
 		)

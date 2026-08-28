@@ -11,6 +11,7 @@ namespace {
 
 constexpr uint8_t kQueueCapacity = 8;
 constexpr uint16_t kPowerToggleHoldMs = 1500;
+constexpr uint32_t kSMeterSamplePeriodUs = 1000; // 1 kHz max ADC sample rate
 
 Config s_cfg{
   true,
@@ -36,6 +37,7 @@ uint16_t s_sMeterAverageRaw = 0;
 uint16_t s_sMeterPeak5sRaw = 0;
 unsigned long s_sMeterAvgStartMs = 0;
 unsigned long s_sMeterPeakStartMs = 0;
+unsigned long s_lastSMeterSampleUs = 0;
 bool s_powerWasDown = false;
 bool s_powerLongPressHandled = false;
 unsigned long s_powerPressStartMs = 0;
@@ -68,6 +70,12 @@ void updateSMeter() {
   if (s_cfg.sMeterPin < 0) {
     return;
   }
+
+  const unsigned long nowUs = micros();
+  if (static_cast<uint32_t>(nowUs - s_lastSMeterSampleUs) < kSMeterSamplePeriodUs) {
+    return;
+  }
+  s_lastSMeterSampleUs = nowUs;
 
   const unsigned long now = millis();
   const uint16_t rawSample = static_cast<uint16_t>(analogRead(static_cast<uint8_t>(s_cfg.sMeterPin)));
@@ -134,6 +142,7 @@ void begin(const Config& cfg) {
   s_sMeterPeak5sRaw = 0;
   s_sMeterAvgStartMs = millis();
   s_sMeterPeakStartMs = s_sMeterAvgStartMs;
+  s_lastSMeterSampleUs = micros();
   s_powerWasDown = false;
   s_powerLongPressHandled = false;
   s_powerPressStartMs = 0;

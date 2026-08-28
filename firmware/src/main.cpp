@@ -35,6 +35,13 @@ using DisplayUI::Mode;
 // error = +900 Hz (~+126.8 ppm), so reduce magnitude of negative correction.
 // Temporary correction tuned to bring the measured carrier close to the indicated frequency.
 static constexpr int32_t SI5351_CORRECTION_PPB = -4610000;
+// Extra post-calibration trim. Use this to nudge displayed vs measured LO
+// after major synthesizer-mode changes (e.g. spread-spectrum disable).
+// Latest trim from measured LO error.
+// For LSB/USB in this firmware, LO should sit on the dial frequency; only CW is
+// offset by the sidetone pitch. Use the midpoint of the last two trims so the
+// residual error is centered around zero and normal temperature drift dominates.
+static constexpr int32_t SI5351_CORRECTION_TRIM_PPB = 4602450;
 static constexpr uint8_t SI5351_RX_I2C_ADDR = 0x60;
 static constexpr uint8_t SI5351_TX_I2C_ADDR = 0x61;
 static constexpr int32_t CW_PITCH_HZ = 700;
@@ -516,6 +523,7 @@ void setup() {
   DBG_PORT.println(__TIME__);
   DBG_PORT.print("[FW] Tag: ");
   DBG_PORT.println(FW_TAG);
+  const int32_t si5351CorrectionPpb = SI5351_CORRECTION_PPB + SI5351_CORRECTION_TRIM_PPB;
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH); // Steady on after boot
 
@@ -589,7 +597,7 @@ void setup() {
 
   DBG_PORT.println("[SI5351] Initializing RX...\n");
   if (SI5351Control::beginDevice(SI5351Control::Device::Rx,
-                                 {SI5351_RX_I2C_ADDR, 25000000UL, SI5351_CORRECTION_PPB})) {
+                                 {SI5351_RX_I2C_ADDR, 25000000UL, si5351CorrectionPpb})) {
     if (SI5351Control::setQuadrature90(SI5351Control::Device::Rx,
                        loFrequencyForMode(vfoFreq, currentMode),
                        reverseQuadratureForMode(currentMode))) {
@@ -608,7 +616,7 @@ void setup() {
 
   DBG_PORT.println("[SI5351] Initializing TX (shared I2C, addr 0x61)...");
   if (SI5351Control::beginDevice(SI5351Control::Device::Tx,
-                                 {SI5351_TX_I2C_ADDR, 25000000UL, SI5351_CORRECTION_PPB})) {
+                                 {SI5351_TX_I2C_ADDR, 25000000UL, si5351CorrectionPpb})) {
     SI5351Control::setVFO(SI5351Control::Device::Tx, vfoFreq);
     SI5351Control::enableOutput(SI5351Control::Device::Tx, false);
     DBG_PORT.println("[SI5351-TX] Ready on same I2C bus");
@@ -655,7 +663,14 @@ void setup() {
 
 // ── Main loop ────────────────────────────────────────────────────────────────
 void loop() {
-  BoardControl::update();
+  // Run control scanning at a fixed 100 Hz cadence instead of every loop
+  // iteration to avoid high-rate deterministic load modulation.
+  static unsigned long s_lastControlPollUs = 0;
+  const unsigned long nowUs = micros();
+  if (static_cast<uint32_t>(nowUs - s_lastControlPollUs) >= 10000U) {
+    s_lastControlPollUs = nowUs;
+    BoardControl::update();
+  }
 
   if (g_softPowerOff) {
     BoardControl::Command offCommand{};
