@@ -8,24 +8,21 @@
     (comment "Draft schematic sheet for the processor power-latch. Update symbols/footprints in KiCad.")
   )
 
+  ;; Minimal valid symbol entries (generic). Replace with real library parts in KiCad.
   (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (value "R1") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1M"))
-
   (symbol (lib_id "Device:R") (at 50 80 0) (unit 1) (value "R2") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1k"))
-
   (symbol (lib_id "Device:R") (at 50 120 0) (unit 1) (value "R3") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "100k"))
 
   (symbol (lib_id "Device:C") (at 140 40 0) (unit 1) (value "C1") (footprint "Capacitor_SMD:C_0603_1608Metric") (property "Value" "100nF"))
 
   (symbol (lib_id "Device:Q_P_MOS") (at 10 60 0) (unit 1) (value "Q1") (footprint "Package_TO_SOT_SMD:SOT-23") (property "Value" "AO3407A"))
-
   (symbol (lib_id "Device:Q_N_MOS") (at 200 60 0) (unit 1) (value "Q2") (footprint "Package_TO_SOT_SMD:SOT-23") (property "Value" "2N7002"))
 
   (symbol (lib_id "Switch:SW_Push") (at 140 120 0) (unit 1) (value "SW1") (footprint "Button_Switch_SMD:SW_SPST_THT") (property "Value" "POWER"))
-
   (symbol (lib_id "Diode:D_Schottky") (at 10 140 0) (unit 1) (value "D1") (footprint "Diode_SMD:Package_DO-214") (property "Value" "SS"))
-
   (symbol (lib_id "Regulator:LD") (at 200 140 0) (unit 1) (value "U1") (footprint "Package_TO_SOT_SMD:SOT-223") (property "Value" "LDO_3V3"))
 
+  ;; Nets and labels
   (wire (pts (xy 20 60) (xy 60 60)))
   (label (name "VIN") (at 5 60 0) (orientation 180))
   (wire (pts (xy 60 60) (xy 120 60)))
@@ -37,5 +34,5 @@
   (wire (pts (xy 200 100) (xy 200 140)))
   (label (name "POWER_HOLD") (at 210 120 0) (orientation 0))
 
-  (comment (at 10 200 0) (text "Note: Update library links and footprints in KiCad."))
+  (comment "Note: Update library links and footprints in KiCad.")
 )
