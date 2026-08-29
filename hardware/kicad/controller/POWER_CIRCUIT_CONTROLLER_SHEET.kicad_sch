@@ -1,5 +1,5 @@
 (kicad_sch (version 20220628) (generator eeschema)
-  (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (value "R1"))
+  (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (in_bom yes) (on_board yes) (value "R1"))
 
   (wire (pts (xy 20 60) (xy 60 60)))
   (label (name "VIN") (at 5 60 0) (orientation 180))
