@@ -1,4 +1,4 @@
-((kicad_sch (version 20211014) (generator eeschema)
+ (kicad_sch (version 20211014) (generator eeschema)
   (paper "A4")
   (title_block
     (title "Controller: Processor Power Latch")
@@ -38,4 +38,4 @@
   (label (name "POWER_HOLD") (at 210 120 0) (orientation 0))
 
   (comment (at 10 200 0) (text "Note: Update library links and footprints in KiCad."))
-))
+)
