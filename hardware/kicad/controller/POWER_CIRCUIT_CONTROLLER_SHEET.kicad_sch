@@ -1,7 +1,8 @@
  (kicad_sch (version 20211014) (generator eeschema)
+  (paper "A4")
 
-  ;; Minimal sheet without title_block to avoid parser issues.
-  ;; Replace generic symbols with real library parts inside KiCad.
+  ;; Minimal valid sheet content. Import into KiCad and replace symbols/footprints
+  ;; with the project's libraries.
 
   (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (value "R1") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1M"))
   (symbol (lib_id "Device:R") (at 50 80 0) (unit 1) (value "R2") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1k"))
