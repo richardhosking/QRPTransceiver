@@ -1,3 +1,16 @@
+(kicad_sch (version 20211014) (generator eeschema)
+  (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (value "R1") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1M"))
+  (symbol (lib_id "Device:R") (at 50 80 0) (unit 1) (value "R2") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1k"))
+  (symbol (lib_id "Device:C") (at 140 40 0) (unit 1) (value "C1") (footprint "Capacitor_SMD:C_0603_1608Metric") (property "Value" "100nF"))
+
+  (wire (pts (xy 20 60) (xy 60 60)))
+  (label (name "VIN") (at 5 60 0) (orientation 180))
+  (wire (pts (xy 60 60) (xy 120 60)))
+  (label (name "GATE_CTRL") (at 95 75 0) (orientation 0))
+  (wire (pts (xy 120 60) (xy 160 60)))
+  (label (name "V_SYS") (at 170 60 0) (orientation 0))
+
+)
  (kicad_sch (version 20211014) (generator eeschema)
   (paper "A4")
 
