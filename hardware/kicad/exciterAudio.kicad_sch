@@ -783,7 +783,7 @@
 				)
 			)
 		)
-		(symbol "Connector:Conn_01x02_Socket"
+		(symbol "Connector_Generic:Conn_01x02"
 			(pin_names
 				(offset 1.016) hide)
 			(exclude_from_sim no)
@@ -797,7 +797,7 @@
 					)
 				)
 			)
-			(property "Value" "Conn_01x02_Socket"
+			(property "Value" "Conn_01x02"
 				(at 0 -5.08 0)
 				(effects
 					(font
@@ -823,21 +823,13 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x02, script generated"
+			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 					(hide yes)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
 				)
 			)
 			(property "ki_keywords" "connector"
@@ -858,11 +850,10 @@
 					(hide yes)
 				)
 			)
-			(symbol "Conn_01x02_Socket_1_1"
-				(arc
-					(start 0 -2.032)
-					(mid -0.5058 -2.54)
-					(end 0 -3.048)
+			(symbol "Conn_01x02_1_1"
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -871,10 +862,9 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy -1.27 -2.54) (xy -0.508 -2.54)
-					)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -883,28 +873,15 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy -1.27 0) (xy -0.508 0)
-					)
+				(rectangle
+					(start -1.27 1.27)
+					(end 1.27 -3.81)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start 0 0.508)
-					(mid -0.5058 0)
-					(end 0 -0.508)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(pin passive line
@@ -3547,16 +3524,6 @@
 	)
 	(wire
 		(pts
-			(xy 85.09 144.78) (xy 85.09 151.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8cb16fec-3625-4b6f-b33f-073264127216")
-	)
-	(wire
-		(pts
 			(xy 50.8 123.19) (xy 54.61 123.19)
 		)
 		(stroke
@@ -3774,6 +3741,16 @@
 			(type default)
 		)
 		(uuid "a19135ab-8a87-4328-bff2-e16780470b36")
+	)
+	(wire
+		(pts
+			(xy 85.09 147.32) (xy 85.09 151.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a20196b7-78ee-40b9-933d-4d8dba7a26e5")
 	)
 	(wire
 		(pts
@@ -4084,6 +4061,16 @@
 			(type default)
 		)
 		(uuid "bea5f0bc-475e-4f36-b86a-28d18168dcd8")
+	)
+	(wire
+		(pts
+			(xy 90.17 147.32) (xy 85.09 147.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bee3e952-15ba-48bd-b377-6c361002e527")
 	)
 	(wire
 		(pts
@@ -5085,6 +5072,28 @@
 		)
 		(uuid "ff92c2aa-58a8-4349-832b-0558b91e6743")
 	)
+	(global_label "+12V"
+		(shape input)
+		(at 90.17 147.32 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.2192 1.2192)
+			)
+			(justify left)
+		)
+		(uuid "267d302b-e351-4f5f-84be-3e67098faac7")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 97.2842 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "TxMix0Deg"
 		(shape input)
 		(at 264.16 33.02 0)
@@ -5446,7 +5455,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "01b5519a-db90-43c8-b8eb-5c3badd616b1")
-		(property "Reference" "C142"
+		(property "Reference" "C151"
 			(at 213.868 86.868 90)
 			(effects
 				(font
@@ -5498,7 +5507,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C142")
+					(reference "C151")
 					(unit 1)
 				)
 			)
@@ -5513,7 +5522,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "034aef49-d0a6-479a-8009-b9f327cbf2e6")
-		(property "Reference" "R153"
+		(property "Reference" "R166"
 			(at 200.66 26.4922 90)
 			(effects
 				(font
@@ -5565,7 +5574,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R153")
+					(reference "R166")
 					(unit 1)
 				)
 			)
@@ -5580,7 +5589,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0731decd-7937-4545-9f4b-253a3d28efb9")
-		(property "Reference" "R158"
+		(property "Reference" "R171"
 			(at 212.344 42.926 90)
 			(effects
 				(font
@@ -5632,7 +5641,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R158")
+					(reference "R171")
 					(unit 1)
 				)
 			)
@@ -5752,7 +5761,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0ad10bcd-4aef-41a2-92c9-53b8804161a9")
-		(property "Reference" "C151"
+		(property "Reference" "C124"
 			(at 88.9 166.3699 0)
 			(effects
 				(font
@@ -5806,114 +5815,8 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C151")
+					(reference "C124")
 					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Amplifier_Operational:LM324")
-		(at 41.91 171.45 0)
-		(unit 5)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "0d2c33db-8200-4be6-9310-c41ca49af028")
-		(property "Reference" "U14"
-			(at 40.64 170.1799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "LM324"
-			(at 40.64 172.7199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 40.64 168.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm2902-n.pdf"
-			(at 43.18 166.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Low-Power, Quad-Operational Amplifiers, DIP-14/SOIC-14/SSOP-14"
-			(at 41.91 171.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "10"
-			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe1")
-		)
-		(pin "6"
-			(uuid "102c0c59-427c-46e0-85c9-d189135e33fd")
-		)
-		(pin "5"
-			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d500")
-		)
-		(pin "3"
-			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219bd")
-		)
-		(pin "8"
-			(uuid "b5b939db-caff-4438-8180-0d37930e4fe4")
-		)
-		(pin "2"
-			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f4")
-		)
-		(pin "1"
-			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d6")
-		)
-		(pin "12"
-			(uuid "47441a40-2346-4141-969a-4034bd0aaf42")
-		)
-		(pin "13"
-			(uuid "605e8063-416e-447b-83e0-5ddc6395c856")
-		)
-		(pin "14"
-			(uuid "048e4ea8-2725-42c6-9018-3730d8ce463e")
-		)
-		(pin "4"
-			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f2")
-		)
-		(pin "11"
-			(uuid "be6216d6-2b56-4241-ab8c-adcc235790c8")
-		)
-		(pin "9"
-			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096be")
-		)
-		(pin "7"
-			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c6219")
-		)
-		(instances
-			(project ""
-				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "U14")
-					(unit 5)
 				)
 			)
 		)
@@ -5927,7 +5830,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1340fb30-febb-4f0f-9461-f41c83762cc7")
-		(property "Reference" "R160"
+		(property "Reference" "R173"
 			(at 213.36 70.9422 90)
 			(effects
 				(font
@@ -5979,7 +5882,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R160")
+					(reference "R173")
 					(unit 1)
 				)
 			)
@@ -5994,7 +5897,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "15bafeb3-e879-42cd-8e4c-f559613b3cbb")
-		(property "Reference" "R162"
+		(property "Reference" "R175"
 			(at 224.79 43.18 90)
 			(effects
 				(font
@@ -6046,7 +5949,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R162")
+					(reference "R175")
 					(unit 1)
 				)
 			)
@@ -6061,7 +5964,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1a50b148-7fa6-49dd-bb04-4b80aa9fd05e")
-		(property "Reference" "C131"
+		(property "Reference" "C140"
 			(at 184.15 35.56 90)
 			(effects
 				(font
@@ -6113,7 +6016,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C131")
+					(reference "C140")
 					(unit 1)
 				)
 			)
@@ -6129,7 +6032,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1c5f64a7-747a-4a7d-ad5a-7a3b5fa57cd2")
-		(property "Reference" "C153"
+		(property "Reference" "C123"
 			(at 44.45 115.57 90)
 			(effects
 				(font
@@ -6181,7 +6084,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C153")
+					(reference "C123")
 					(unit 1)
 				)
 			)
@@ -6197,7 +6100,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1ddf89a4-a91c-4268-b3ed-7b7370f89c70")
-		(property "Reference" "C155"
+		(property "Reference" "C125"
 			(at 91.44 109.22 90)
 			(effects
 				(font
@@ -6249,7 +6152,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C155")
+					(reference "C125")
 					(unit 1)
 				)
 			)
@@ -6264,7 +6167,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1e025595-b956-46c8-a222-9e8906614098")
-		(property "Reference" "C127"
+		(property "Reference" "C136"
 			(at 171.45 35.56 90)
 			(effects
 				(font
@@ -6316,76 +6219,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C127")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x02_Socket")
-		(at 20.32 118.11 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1e74ae9b-7e4e-4309-9c5b-dc19bcb1d710")
-		(property "Reference" "J12"
-			(at 20.955 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Mic"
-			(at 20.955 115.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 20.32 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 20.32 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 20.32 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "30b9e6f0-5bb8-4011-9dbc-76a43cc759bf")
-		)
-		(pin "2"
-			(uuid "f2dfcb61-e935-47d7-9d2c-b1d953e4080d")
-		)
-		(instances
-			(project ""
-				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "J12")
+					(reference "C136")
 					(unit 1)
 				)
 			)
@@ -6400,7 +6234,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "204ded3f-c8b4-45a3-b0e7-e1320beb3229")
-		(property "Reference" "C123"
+		(property "Reference" "C132"
 			(at 158.75 35.56 90)
 			(effects
 				(font
@@ -6452,7 +6286,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C123")
+					(reference "C132")
 					(unit 1)
 				)
 			)
@@ -6467,7 +6301,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "210a3593-aa13-413c-860d-640382fc9d7d")
-		(property "Reference" "C132"
+		(property "Reference" "C141"
 			(at 184.912 50.038 90)
 			(effects
 				(font
@@ -6519,7 +6353,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C132")
+					(reference "C141")
 					(unit 1)
 				)
 			)
@@ -6534,7 +6368,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "21ebf93a-db5c-46b8-bcb3-6d8f8ddb1d22")
-		(property "Reference" "R161"
+		(property "Reference" "R174"
 			(at 226.06 26.4922 90)
 			(effects
 				(font
@@ -6586,7 +6420,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R161")
+					(reference "R174")
 					(unit 1)
 				)
 			)
@@ -6601,7 +6435,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "26b2cb30-3959-4795-9b39-f25718f7f30a")
-		(property "Reference" "C144"
+		(property "Reference" "C153"
 			(at 223.266 50.038 90)
 			(effects
 				(font
@@ -6653,7 +6487,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C144")
+					(reference "C153")
 					(unit 1)
 				)
 			)
@@ -6668,7 +6502,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "28d21a7e-3c8e-44f8-a2ad-740895e6eee9")
-		(property "Reference" "R147"
+		(property "Reference" "R160"
 			(at 175.26 55.7022 90)
 			(effects
 				(font
@@ -6720,7 +6554,75 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R147")
+					(reference "R160")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 20.32 120.65 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2b28168e-39c1-47eb-849b-f9787dde91f1")
+		(property "Reference" "J20"
+			(at 20.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Mic"
+			(at 20.32 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 20.32 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 20.32 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 20.32 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fe7b5a5a-8cd0-4c20-97bd-c9ffc8066950")
+		)
+		(pin "2"
+			(uuid "23b0d0c4-12f6-43a2-a4c2-6ebeeeeeb96f")
+		)
+		(instances
+			(project ""
+				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
+					(reference "J20")
 					(unit 1)
 				)
 			)
@@ -6735,7 +6637,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2db6d8e7-011b-4f33-9adc-eb0e7e933d9e")
-		(property "Reference" "C139"
+		(property "Reference" "C148"
 			(at 209.55 35.56 90)
 			(effects
 				(font
@@ -6787,7 +6689,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C139")
+					(reference "C148")
 					(unit 1)
 				)
 			)
@@ -6802,7 +6704,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "309e5f3d-66e7-4e98-a983-7553494c7c97")
-		(property "Reference" "R163"
+		(property "Reference" "R176"
 			(at 226.06 55.7022 90)
 			(effects
 				(font
@@ -6854,7 +6756,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R163")
+					(reference "R176")
 					(unit 1)
 				)
 			)
@@ -6973,7 +6875,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "34834434-8da9-4124-a0e5-dc87d01d1f3b")
-		(property "Reference" "C137"
+		(property "Reference" "C146"
 			(at 197.104 65.532 90)
 			(effects
 				(font
@@ -7025,7 +6927,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C137")
+					(reference "C146")
 					(unit 1)
 				)
 			)
@@ -7113,7 +7015,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "42fd1e30-1d66-4fff-8df1-1e4b848b009f")
-		(property "Reference" "#PWR51"
+		(property "Reference" "#PWR52"
 			(at 107.95 107.95 0)
 			(effects
 				(font
@@ -7164,7 +7066,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "#PWR51")
+					(reference "#PWR52")
 					(unit 1)
 				)
 			)
@@ -7179,7 +7081,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "49b5ebdf-d0b7-402e-9b2a-db719b420a09")
-		(property "Reference" "R164"
+		(property "Reference" "R177"
 			(at 226.06 70.9422 90)
 			(effects
 				(font
@@ -7231,7 +7133,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R164")
+					(reference "R177")
 					(unit 1)
 				)
 			)
@@ -7247,7 +7149,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4b33feaf-b450-4774-b824-c5b9440486c7")
-		(property "Reference" "#PWR50"
+		(property "Reference" "#PWR51"
 			(at 96.52 146.05 0)
 			(effects
 				(font
@@ -7298,7 +7200,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "#PWR50")
+					(reference "#PWR51")
 					(unit 1)
 				)
 			)
@@ -7358,46 +7260,46 @@
 			)
 		)
 		(pin "10"
-			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe1")
+			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe2")
 		)
 		(pin "6"
-			(uuid "102c0c59-427c-46e0-85c9-d189135e33fd")
+			(uuid "102c0c59-427c-46e0-85c9-d189135e33fe")
 		)
 		(pin "5"
-			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d500")
+			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d501")
 		)
 		(pin "3"
-			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219bd")
+			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219be")
 		)
 		(pin "8"
-			(uuid "b5b939db-caff-4438-8180-0d37930e4fe4")
+			(uuid "b5b939db-caff-4438-8180-0d37930e4fe5")
 		)
 		(pin "2"
-			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f4")
+			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f5")
 		)
 		(pin "1"
-			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d6")
+			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d7")
 		)
 		(pin "12"
-			(uuid "47441a40-2346-4141-969a-4034bd0aaf42")
+			(uuid "47441a40-2346-4141-969a-4034bd0aaf43")
 		)
 		(pin "13"
-			(uuid "605e8063-416e-447b-83e0-5ddc6395c856")
+			(uuid "605e8063-416e-447b-83e0-5ddc6395c857")
 		)
 		(pin "14"
-			(uuid "048e4ea8-2725-42c6-9018-3730d8ce463e")
+			(uuid "048e4ea8-2725-42c6-9018-3730d8ce463f")
 		)
 		(pin "4"
-			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f2")
+			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f3")
 		)
 		(pin "11"
-			(uuid "be6216d6-2b56-4241-ab8c-adcc235790c8")
+			(uuid "be6216d6-2b56-4241-ab8c-adcc235790c9")
 		)
 		(pin "9"
-			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096be")
+			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096bf")
 		)
 		(pin "7"
-			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c6219")
+			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c621a")
 		)
 		(instances
 			(project ""
@@ -7417,7 +7319,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5930ef49-1d8b-4d92-8306-4da3bd41db95")
-		(property "Reference" "R144"
+		(property "Reference" "R157"
 			(at 162.56 70.9422 90)
 			(effects
 				(font
@@ -7469,7 +7371,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R144")
+					(reference "R157")
 					(unit 1)
 				)
 			)
@@ -7485,7 +7387,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5d885cde-437f-451a-affa-45ab65530f80")
-		(property "Reference" "R168"
+		(property "Reference" "R138"
 			(at 53.34 138.4299 0)
 			(effects
 				(font
@@ -7539,7 +7441,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R168")
+					(reference "R138")
 					(unit 1)
 				)
 			)
@@ -7554,7 +7456,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5e653af4-f168-421d-801f-1b2890f7c229")
-		(property "Reference" "C140"
+		(property "Reference" "C149"
 			(at 210.058 50.292 90)
 			(effects
 				(font
@@ -7606,7 +7508,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C140")
+					(reference "C149")
 					(unit 1)
 				)
 			)
@@ -7621,7 +7523,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "600a5c37-834f-40bb-9a3c-9fb2c2184210")
-		(property "Reference" "R142"
+		(property "Reference" "R155"
 			(at 160.782 43.18 90)
 			(effects
 				(font
@@ -7673,7 +7575,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R142")
+					(reference "R155")
 					(unit 1)
 				)
 			)
@@ -7688,7 +7590,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "61004c64-d5a4-49da-9fee-d23f17a49b05")
-		(property "Reference" "R150"
+		(property "Reference" "R163"
 			(at 187.198 42.926 90)
 			(effects
 				(font
@@ -7740,7 +7642,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R150")
+					(reference "R163")
 					(unit 1)
 				)
 			)
@@ -7755,7 +7657,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "63506164-784a-421c-bd5f-8841ceb49f8b")
-		(property "Reference" "R149"
+		(property "Reference" "R162"
 			(at 187.96 26.4922 90)
 			(effects
 				(font
@@ -7807,7 +7709,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R149")
+					(reference "R162")
 					(unit 1)
 				)
 			)
@@ -7822,7 +7724,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "65528e5f-9476-4284-aa01-f9039c34dbd0")
-		(property "Reference" "R141"
+		(property "Reference" "R154"
 			(at 162.56 26.4922 90)
 			(effects
 				(font
@@ -7874,7 +7776,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R141")
+					(reference "R154")
 					(unit 1)
 				)
 			)
@@ -7889,7 +7791,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "65fcecbf-e5b4-49f7-abdd-969b207300a1")
-		(property "Reference" "C135"
+		(property "Reference" "C144"
 			(at 196.85 35.56 90)
 			(effects
 				(font
@@ -7941,7 +7843,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C135")
+					(reference "C144")
 					(unit 1)
 				)
 			)
@@ -7956,7 +7858,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "66403c6b-cd08-4461-b90d-d970225c7abe")
-		(property "Reference" "C143"
+		(property "Reference" "C152"
 			(at 222.25 35.56 90)
 			(effects
 				(font
@@ -8008,7 +7910,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C143")
+					(reference "C152")
 					(unit 1)
 				)
 			)
@@ -8023,7 +7925,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "68249b74-c8fa-4769-bce3-8fb00b1290c3")
-		(property "Reference" "R157"
+		(property "Reference" "R170"
 			(at 213.36 26.4922 90)
 			(effects
 				(font
@@ -8075,7 +7977,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R157")
+					(reference "R170")
 					(unit 1)
 				)
 			)
@@ -8090,7 +7992,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "691ae8bf-65cc-4296-8e78-60a4a6f8a314")
-		(property "Reference" "R138"
+		(property "Reference" "R151"
 			(at 146.558 43.18 90)
 			(effects
 				(font
@@ -8142,7 +8044,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R138")
+					(reference "R151")
 					(unit 1)
 				)
 			)
@@ -8157,7 +8059,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6bf75bd7-4332-47ee-a9cc-92b3b3dbdeeb")
-		(property "Reference" "C125"
+		(property "Reference" "C134"
 			(at 159.512 65.278 90)
 			(effects
 				(font
@@ -8209,7 +8111,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C125")
+					(reference "C134")
 					(unit 1)
 				)
 			)
@@ -8224,7 +8126,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6da8b8c7-66e8-4e1e-93b1-bd14a70485ec")
-		(property "Reference" "R166"
+		(property "Reference" "R140"
 			(at 68.834 165.608 0)
 			(effects
 				(font
@@ -8278,7 +8180,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R166")
+					(reference "R140")
 					(unit 1)
 				)
 			)
@@ -8293,7 +8195,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7226d340-b5af-4746-ad58-097c213c97be")
-		(property "Reference" "R139"
+		(property "Reference" "R152"
 			(at 148.59 55.7022 90)
 			(effects
 				(font
@@ -8345,7 +8247,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R139")
+					(reference "R152")
 					(unit 1)
 				)
 			)
@@ -8361,7 +8263,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "79ad9830-d76b-45ff-94a5-cd84f3cae934")
-		(property "Reference" "#PWR48"
+		(property "Reference" "#PWR50"
 			(at 85.09 182.88 0)
 			(effects
 				(font
@@ -8411,7 +8313,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "#PWR48")
+					(reference "#PWR50")
 					(unit 1)
 				)
 			)
@@ -8426,7 +8328,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "79d290f5-8372-4861-afc0-c0adc6074fd6")
-		(property "Reference" "R151"
+		(property "Reference" "R164"
 			(at 187.96 55.7022 90)
 			(effects
 				(font
@@ -8478,7 +8380,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R151")
+					(reference "R164")
 					(unit 1)
 				)
 			)
@@ -8493,7 +8395,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7b35d03f-f3c4-4321-961d-9898e2e8b3ac")
-		(property "Reference" "C126"
+		(property "Reference" "C135"
 			(at 162.56 86.36 90)
 			(effects
 				(font
@@ -8545,7 +8447,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C126")
+					(reference "C135")
 					(unit 1)
 				)
 			)
@@ -8560,7 +8462,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "80042b22-bfe3-491f-b541-27128ffbc170")
-		(property "Reference" "C154"
+		(property "Reference" "C126"
 			(at 98.552 130.556 0)
 			(effects
 				(font
@@ -8614,7 +8516,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C154")
+					(reference "C126")
 					(unit 1)
 				)
 			)
@@ -8629,7 +8531,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "85afccdf-f8bc-4182-9690-a857203a21b7")
-		(property "Reference" "C121"
+		(property "Reference" "C130"
 			(at 145.034 65.278 90)
 			(effects
 				(font
@@ -8681,7 +8583,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C121")
+					(reference "C130")
 					(unit 1)
 				)
 			)
@@ -8696,7 +8598,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "88ec178f-d279-4b88-a3a3-2be5fc09bfb0")
-		(property "Reference" "C133"
+		(property "Reference" "C142"
 			(at 184.912 65.024 90)
 			(effects
 				(font
@@ -8748,7 +8650,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C133")
+					(reference "C142")
 					(unit 1)
 				)
 			)
@@ -8763,7 +8665,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8c36a8a3-20c6-4df6-b66d-378e965bb19f")
-		(property "Reference" "C128"
+		(property "Reference" "C137"
 			(at 172.212 49.784 90)
 			(effects
 				(font
@@ -8815,7 +8717,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C128")
+					(reference "C137")
 					(unit 1)
 				)
 			)
@@ -8831,7 +8733,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8cd1fc48-500b-4cca-886b-8b9337a702bd")
-		(property "Reference" "R176"
+		(property "Reference" "R145"
 			(at 93.98 67.31 90)
 			(effects
 				(font
@@ -8883,7 +8785,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R176")
+					(reference "R145")
 					(unit 1)
 				)
 			)
@@ -8898,7 +8800,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8d7a9d49-ca86-48dd-a812-386845077895")
-		(property "Reference" "R171"
+		(property "Reference" "R143"
 			(at 88.392 128.524 90)
 			(effects
 				(font
@@ -8950,7 +8852,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R171")
+					(reference "R143")
 					(unit 1)
 				)
 			)
@@ -9033,7 +8935,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "907c85b3-19ca-456f-b8b5-1ee817a96584")
-		(property "Reference" "R173"
+		(property "Reference" "R148"
 			(at 113.03 44.45 90)
 			(effects
 				(font
@@ -9085,7 +8987,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R173")
+					(reference "R148")
 					(unit 1)
 				)
 			)
@@ -9100,7 +9002,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "908fc179-3301-40fe-8f5d-cfbc106bca17")
-		(property "Reference" "R154"
+		(property "Reference" "R167"
 			(at 198.882 42.926 90)
 			(effects
 				(font
@@ -9152,7 +9054,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R154")
+					(reference "R167")
 					(unit 1)
 				)
 			)
@@ -9168,7 +9070,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9292f74a-f5a1-41ce-a103-4197b854afab")
-		(property "Reference" "R165"
+		(property "Reference" "R142"
 			(at 87.63 153.6699 0)
 			(effects
 				(font
@@ -9222,7 +9124,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R165")
+					(reference "R142")
 					(unit 1)
 				)
 			)
@@ -9237,7 +9139,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "92b38f0f-b91e-4fd2-afae-c3d36ab6afb4")
-		(property "Reference" "C136"
+		(property "Reference" "C145"
 			(at 197.612 50.292 90)
 			(effects
 				(font
@@ -9289,7 +9191,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C136")
+					(reference "C145")
 					(unit 1)
 				)
 			)
@@ -9305,7 +9207,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "941d0006-482c-4327-ad0e-6d480bda2fee")
-		(property "Reference" "R172"
+		(property "Reference" "R146"
 			(at 105.41 62.2299 0)
 			(effects
 				(font
@@ -9359,7 +9261,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R172")
+					(reference "R146")
 					(unit 1)
 				)
 			)
@@ -9375,7 +9277,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "94b68d0d-5e33-4b55-b0af-ce25643c6ba5")
-		(property "Reference" "C152"
+		(property "Reference" "C127"
 			(at 100.33 165.7349 0)
 			(effects
 				(font
@@ -9429,7 +9331,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C152")
+					(reference "C127")
 					(unit 1)
 				)
 			)
@@ -9444,7 +9346,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "97c853b5-a314-4e7c-a2df-e4b7f3218a61")
-		(property "Reference" "C146"
+		(property "Reference" "C155"
 			(at 226.06 86.868 90)
 			(effects
 				(font
@@ -9496,7 +9398,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C146")
+					(reference "C155")
 					(unit 1)
 				)
 			)
@@ -9511,7 +9413,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9ae177c4-5bd7-41b7-94a5-189a8c0ab8ee")
-		(property "Reference" "R156"
+		(property "Reference" "R169"
 			(at 200.66 70.9422 90)
 			(effects
 				(font
@@ -9563,7 +9465,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R156")
+					(reference "R169")
 					(unit 1)
 				)
 			)
@@ -9578,7 +9480,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9f632d08-7ee0-4e9e-9ba5-7501ab2e8cf0")
-		(property "Reference" "C129"
+		(property "Reference" "C138"
 			(at 171.704 65.278 90)
 			(effects
 				(font
@@ -9630,7 +9532,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C129")
+					(reference "C138")
 					(unit 1)
 				)
 			)
@@ -9645,7 +9547,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a4925e43-7985-476e-8805-661af0442af1")
-		(property "Reference" "R155"
+		(property "Reference" "R168"
 			(at 200.66 55.7022 90)
 			(effects
 				(font
@@ -9697,7 +9599,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R155")
+					(reference "R168")
 					(unit 1)
 				)
 			)
@@ -9712,7 +9614,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a81b8751-6d33-498d-a677-a2d537961c53")
-		(property "Reference" "C141"
+		(property "Reference" "C150"
 			(at 210.312 65.278 90)
 			(effects
 				(font
@@ -9764,7 +9666,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C141")
+					(reference "C150")
 					(unit 1)
 				)
 			)
@@ -9779,7 +9681,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a847603c-a8f6-4762-a379-d092e142ea50")
-		(property "Reference" "R169"
+		(property "Reference" "R139"
 			(at 60.96 136.144 90)
 			(effects
 				(font
@@ -9831,7 +9733,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R169")
+					(reference "R139")
 					(unit 1)
 				)
 			)
@@ -9846,7 +9748,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a984b943-607e-42f5-a32e-d3f00f78dc88")
-		(property "Reference" "C145"
+		(property "Reference" "C154"
 			(at 223.012 65.278 90)
 			(effects
 				(font
@@ -9898,114 +9800,8 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C145")
+					(reference "C154")
 					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Amplifier_Operational:LM324")
-		(at 35.56 170.18 0)
-		(unit 5)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ad1893fb-a490-4ec2-96d0-1ec13b9aa870")
-		(property "Reference" "U13"
-			(at 34.29 168.9099 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "LM324"
-			(at 34.29 171.4499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 34.29 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm2902-n.pdf"
-			(at 36.83 165.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Low-Power, Quad-Operational Amplifiers, DIP-14/SOIC-14/SSOP-14"
-			(at 35.56 170.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "11"
-			(uuid "1f09eb69-13d6-4b3b-b53c-d2c23bdb158b")
-		)
-		(pin "2"
-			(uuid "8fad06ac-807c-4984-93ee-96d522c3b971")
-		)
-		(pin "1"
-			(uuid "59f99708-4651-45a6-8397-c0ab036b3e90")
-		)
-		(pin "9"
-			(uuid "fe7bcd5a-5c13-4ae4-944d-924fea290063")
-		)
-		(pin "4"
-			(uuid "99fa704f-4f75-40d4-a403-05fd0edd40e7")
-		)
-		(pin "5"
-			(uuid "80c35ba7-1a12-43de-aa21-994b30bad83d")
-		)
-		(pin "3"
-			(uuid "faa5464e-c877-4173-8e42-866b553a04c1")
-		)
-		(pin "6"
-			(uuid "ee125e26-6fca-44a4-8773-9c9a0e779c78")
-		)
-		(pin "7"
-			(uuid "85d0b8f7-61d0-4719-8195-e12c2b33e597")
-		)
-		(pin "8"
-			(uuid "84dd611d-5729-404e-b738-f379d4529c66")
-		)
-		(pin "10"
-			(uuid "4acce1e0-86ef-4d87-a210-f513fb658d47")
-		)
-		(pin "12"
-			(uuid "1b3adc53-9945-4f3d-a0a2-87ad9b786e99")
-		)
-		(pin "13"
-			(uuid "7433e23a-6449-4b6a-9330-23576adc1ab5")
-		)
-		(pin "14"
-			(uuid "70ecf850-69e6-49af-995e-6efb26fb35a6")
-		)
-		(instances
-			(project ""
-				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "U13")
-					(unit 5)
 				)
 			)
 		)
@@ -10019,7 +9815,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aea9b630-e194-49fc-8200-949610335cd4")
-		(property "Reference" "R137"
+		(property "Reference" "R150"
 			(at 148.59 26.4922 90)
 			(effects
 				(font
@@ -10071,7 +9867,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R137")
+					(reference "R150")
 					(unit 1)
 				)
 			)
@@ -10086,7 +9882,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aecd86c6-ab4e-406c-8e7d-0231c79fe708")
-		(property "Reference" "C124"
+		(property "Reference" "C133"
 			(at 159.258 50.038 90)
 			(effects
 				(font
@@ -10138,7 +9934,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C124")
+					(reference "C133")
 					(unit 1)
 				)
 			)
@@ -10257,7 +10053,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b3b523a9-7496-4f28-b5c3-eeb7239688e7")
-		(property "Reference" "C130"
+		(property "Reference" "C139"
 			(at 175.26 86.106 90)
 			(effects
 				(font
@@ -10309,7 +10105,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C130")
+					(reference "C139")
 					(unit 1)
 				)
 			)
@@ -10324,7 +10120,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b751548c-320b-4dca-aa7f-b408a19fd4ce")
-		(property "Reference" "C134"
+		(property "Reference" "C143"
 			(at 188.214 86.36 90)
 			(effects
 				(font
@@ -10376,7 +10172,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C134")
+					(reference "C143")
 					(unit 1)
 				)
 			)
@@ -10436,46 +10232,46 @@
 			)
 		)
 		(pin "10"
-			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe1")
+			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe3")
 		)
 		(pin "6"
-			(uuid "102c0c59-427c-46e0-85c9-d189135e33fd")
+			(uuid "102c0c59-427c-46e0-85c9-d189135e33ff")
 		)
 		(pin "5"
-			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d500")
+			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d502")
 		)
 		(pin "3"
-			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219bd")
+			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219bf")
 		)
 		(pin "8"
-			(uuid "b5b939db-caff-4438-8180-0d37930e4fe4")
+			(uuid "b5b939db-caff-4438-8180-0d37930e4fe6")
 		)
 		(pin "2"
-			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f4")
+			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f6")
 		)
 		(pin "1"
-			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d6")
+			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d8")
 		)
 		(pin "12"
-			(uuid "47441a40-2346-4141-969a-4034bd0aaf42")
+			(uuid "47441a40-2346-4141-969a-4034bd0aaf44")
 		)
 		(pin "13"
-			(uuid "605e8063-416e-447b-83e0-5ddc6395c856")
+			(uuid "605e8063-416e-447b-83e0-5ddc6395c858")
 		)
 		(pin "14"
-			(uuid "048e4ea8-2725-42c6-9018-3730d8ce463e")
+			(uuid "048e4ea8-2725-42c6-9018-3730d8ce4640")
 		)
 		(pin "4"
-			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f2")
+			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f4")
 		)
 		(pin "11"
-			(uuid "be6216d6-2b56-4241-ab8c-adcc235790c8")
+			(uuid "be6216d6-2b56-4241-ab8c-adcc235790ca")
 		)
 		(pin "9"
-			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096be")
+			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096c0")
 		)
 		(pin "7"
-			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c6219")
+			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c621b")
 		)
 		(instances
 			(project ""
@@ -10495,7 +10291,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c00d6b0e-72e6-4679-8b05-3eb8e4e86570")
-		(property "Reference" "R146"
+		(property "Reference" "R159"
 			(at 174.244 43.18 90)
 			(effects
 				(font
@@ -10547,7 +10343,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R146")
+					(reference "R159")
 					(unit 1)
 				)
 			)
@@ -10563,7 +10359,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c0cfaad8-5965-4fcf-9af9-ee94109d835d")
-		(property "Reference" "R175"
+		(property "Reference" "R149"
 			(at 118.11 78.74 90)
 			(effects
 				(font
@@ -10615,7 +10411,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R175")
+					(reference "R149")
 					(unit 1)
 				)
 			)
@@ -10630,7 +10426,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c2cdeef4-03c7-4618-a1a3-136935887264")
-		(property "Reference" "R148"
+		(property "Reference" "R161"
 			(at 175.26 70.9422 90)
 			(effects
 				(font
@@ -10682,7 +10478,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R148")
+					(reference "R161")
 					(unit 1)
 				)
 			)
@@ -10698,7 +10494,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d04cdd45-5b03-46b9-8417-0565739e9bf7")
-		(property "Reference" "R167"
+		(property "Reference" "R137"
 			(at 53.34 114.2999 0)
 			(effects
 				(font
@@ -10752,7 +10548,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R167")
+					(reference "R137")
 					(unit 1)
 				)
 			)
@@ -10872,7 +10668,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "db9d8b1c-cf26-4e10-8596-3421452c4541")
-		(property "Reference" "R170"
+		(property "Reference" "R141"
 			(at 78.74 119.38 90)
 			(effects
 				(font
@@ -10924,7 +10720,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R170")
+					(reference "R141")
 					(unit 1)
 				)
 			)
@@ -10939,7 +10735,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "dd03267e-18de-458b-970b-7b7af9569e12")
-		(property "Reference" "C120"
+		(property "Reference" "C129"
 			(at 144.78 50.292 90)
 			(effects
 				(font
@@ -10991,7 +10787,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C120")
+					(reference "C129")
 					(unit 1)
 				)
 			)
@@ -11006,7 +10802,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "df62cf7c-1096-46d4-a4ea-b171c2c84b80")
-		(property "Reference" "R145"
+		(property "Reference" "R158"
 			(at 175.26 26.4922 90)
 			(effects
 				(font
@@ -11058,7 +10854,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R145")
+					(reference "R158")
 					(unit 1)
 				)
 			)
@@ -11073,7 +10869,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e079c987-f932-46e8-b571-7d5419cccee5")
-		(property "Reference" "R159"
+		(property "Reference" "R172"
 			(at 213.36 55.7022 90)
 			(effects
 				(font
@@ -11125,7 +10921,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R159")
+					(reference "R172")
 					(unit 1)
 				)
 			)
@@ -11140,7 +10936,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e3fc1515-455c-4e59-8a87-e4cd471f15e1")
-		(property "Reference" "R152"
+		(property "Reference" "R165"
 			(at 187.96 70.9422 90)
 			(effects
 				(font
@@ -11192,7 +10988,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R152")
+					(reference "R165")
 					(unit 1)
 				)
 			)
@@ -11208,7 +11004,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e53cfb3f-39d1-44c5-b408-bdd77054d57d")
-		(property "Reference" "R174"
+		(property "Reference" "R147"
 			(at 110.49 91.4399 0)
 			(effects
 				(font
@@ -11262,7 +11058,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R174")
+					(reference "R147")
 					(unit 1)
 				)
 			)
@@ -11277,7 +11073,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e886729c-8519-4697-a66e-b431d640e697")
-		(property "Reference" "C122"
+		(property "Reference" "C131"
 			(at 148.59 86.868 90)
 			(effects
 				(font
@@ -11329,7 +11125,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C122")
+					(reference "C131")
 					(unit 1)
 				)
 			)
@@ -11345,7 +11141,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e89cf945-bf8d-4a48-b8c2-c6d78d276db8")
-		(property "Reference" "R177"
+		(property "Reference" "R144"
 			(at 93.98 29.21 90)
 			(effects
 				(font
@@ -11397,7 +11193,7 @@
 		(instances
 			(project ""
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R177")
+					(reference "R144")
 					(unit 1)
 				)
 			)
@@ -11457,46 +11253,46 @@
 			)
 		)
 		(pin "10"
-			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe1")
+			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe4")
 		)
 		(pin "6"
-			(uuid "102c0c59-427c-46e0-85c9-d189135e33fd")
+			(uuid "102c0c59-427c-46e0-85c9-d189135e3400")
 		)
 		(pin "5"
-			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d500")
+			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d503")
 		)
 		(pin "3"
-			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219bd")
+			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219c0")
 		)
 		(pin "8"
-			(uuid "b5b939db-caff-4438-8180-0d37930e4fe4")
+			(uuid "b5b939db-caff-4438-8180-0d37930e4fe7")
 		)
 		(pin "2"
-			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f4")
+			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f7")
 		)
 		(pin "1"
-			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d6")
+			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d9")
 		)
 		(pin "12"
-			(uuid "47441a40-2346-4141-969a-4034bd0aaf42")
+			(uuid "47441a40-2346-4141-969a-4034bd0aaf45")
 		)
 		(pin "13"
-			(uuid "605e8063-416e-447b-83e0-5ddc6395c856")
+			(uuid "605e8063-416e-447b-83e0-5ddc6395c859")
 		)
 		(pin "14"
-			(uuid "048e4ea8-2725-42c6-9018-3730d8ce463e")
+			(uuid "048e4ea8-2725-42c6-9018-3730d8ce4641")
 		)
 		(pin "4"
-			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f2")
+			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f5")
 		)
 		(pin "11"
-			(uuid "be6216d6-2b56-4241-ab8c-adcc235790c8")
+			(uuid "be6216d6-2b56-4241-ab8c-adcc235790cb")
 		)
 		(pin "9"
-			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096be")
+			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096c1")
 		)
 		(pin "7"
-			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c6219")
+			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c621c")
 		)
 		(instances
 			(project ""
@@ -11516,7 +11312,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eca60523-5329-4eec-ae39-a2f922c3a49f")
-		(property "Reference" "C138"
+		(property "Reference" "C147"
 			(at 200.914 86.614 90)
 			(effects
 				(font
@@ -11568,7 +11364,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C138")
+					(reference "C147")
 					(unit 1)
 				)
 			)
@@ -11628,46 +11424,46 @@
 			)
 		)
 		(pin "10"
-			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe1")
+			(uuid "98cb4b0b-75ec-4911-a41a-ad9d2ed11fe5")
 		)
 		(pin "6"
-			(uuid "102c0c59-427c-46e0-85c9-d189135e33fd")
+			(uuid "102c0c59-427c-46e0-85c9-d189135e3401")
 		)
 		(pin "5"
-			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d500")
+			(uuid "32ca1a4b-ec75-4480-b3ce-81183975d504")
 		)
 		(pin "3"
-			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219bd")
+			(uuid "083ba85f-53fd-47e0-b1d0-c7d5b3b219c1")
 		)
 		(pin "8"
-			(uuid "b5b939db-caff-4438-8180-0d37930e4fe4")
+			(uuid "b5b939db-caff-4438-8180-0d37930e4fe8")
 		)
 		(pin "2"
-			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f4")
+			(uuid "3d0ca60c-7da5-45d3-94e7-457e5cd066f8")
 		)
 		(pin "1"
-			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188d6")
+			(uuid "8d04869d-981e-41bd-bc6d-58d72a0188da")
 		)
 		(pin "12"
-			(uuid "47441a40-2346-4141-969a-4034bd0aaf42")
+			(uuid "47441a40-2346-4141-969a-4034bd0aaf46")
 		)
 		(pin "13"
-			(uuid "605e8063-416e-447b-83e0-5ddc6395c856")
+			(uuid "605e8063-416e-447b-83e0-5ddc6395c85a")
 		)
 		(pin "14"
-			(uuid "048e4ea8-2725-42c6-9018-3730d8ce463e")
+			(uuid "048e4ea8-2725-42c6-9018-3730d8ce4642")
 		)
 		(pin "4"
-			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f2")
+			(uuid "cccdb5e2-7329-4b71-8434-fee6bf9ac2f6")
 		)
 		(pin "11"
-			(uuid "be6216d6-2b56-4241-ab8c-adcc235790c8")
+			(uuid "be6216d6-2b56-4241-ab8c-adcc235790cc")
 		)
 		(pin "9"
-			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096be")
+			(uuid "8baab5a5-81a8-411e-8b40-1cbade6096c2")
 		)
 		(pin "7"
-			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c6219")
+			(uuid "2b8c9e81-f69b-4339-8901-3b26da7c621d")
 		)
 		(instances
 			(project ""
@@ -11687,7 +11483,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eed646ca-5fa1-4e7b-b88c-5c6f094a38e1")
-		(property "Reference" "R143"
+		(property "Reference" "R156"
 			(at 162.56 55.7022 90)
 			(effects
 				(font
@@ -11739,7 +11535,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R143")
+					(reference "R156")
 					(unit 1)
 				)
 			)
@@ -11754,7 +11550,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eedfc5ad-4128-4c72-8400-bef54bd25f0f")
-		(property "Reference" "C119"
+		(property "Reference" "C128"
 			(at 144.78 35.56 90)
 			(effects
 				(font
@@ -11806,7 +11602,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "C119")
+					(reference "C128")
 					(unit 1)
 				)
 			)
@@ -11821,7 +11617,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f1fa36fc-a71c-4c3f-af7f-088cd510f6ff")
-		(property "Reference" "R140"
+		(property "Reference" "R153"
 			(at 148.59 70.9422 90)
 			(effects
 				(font
@@ -11873,7 +11669,7 @@
 		(instances
 			(project "QRPTransceiver"
 				(path "/2b42efc4-5f47-4ec1-a444-f7c37de69fbf/9a6d582b-c4d9-4fa6-b112-fd760bb839e4"
-					(reference "R140")
+					(reference "R153")
 					(unit 1)
 				)
 			)

@@ -75,6 +75,8 @@ To prevent the fixed sidebands that were observed during testing, the firmware e
 
 Relevant code is in [lib/SI5351Control/src/SI5351Control.cpp](lib/SI5351Control/src/SI5351Control.cpp).
 
+For a detailed write-up of the investigation, observed behaviour, and recommended alternatives, see [docs/summaries/SPREAD_SPECTRUM_NOTES.md](docs/summaries/SPREAD_SPECTRUM_NOTES.md).
+
 ## Drive level and unused outputs
 
 To reduce unnecessary output activity:

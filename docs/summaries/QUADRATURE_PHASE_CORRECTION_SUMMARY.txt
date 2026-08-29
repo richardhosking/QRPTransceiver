@@ -1,12 +1,116 @@
 ================================================================================
-QRP TRANSCEIVER V3 - LOW-BAND QUADRATURE PHASE CORRECTION
-Debugging Summary - 26 April 2026
+QRP TRANSCEIVER V3 - QUADRATURE PHASE CORRECTION SUMMARY
+Merged & Updated - 29 August 2026
 ================================================================================
 
-PROBLEM STATEMENT
+PURPOSE
 ================================================================================
-Low-frequency quadrature outputs (1.8 MHz / 160m band) were severely misphased:
-- Target: 90° phase difference between CLK0 and CLK1 outputs
+This document replaces the original low-band-focused debug notes with a
+consolidated summary of the current approach used in firmware (post-SSC
+workaround). It documents the root cause analysis, the all-band tuning and
+quadrature method chosen, calibration/trim decisions, and practical test
+results.
+
+BACKGROUND & PROBLEM
+================================================================================
+Original issue: low-frequency quadrature outputs (e.g. 1.8 MHz) were not
+producing the expected 90° phase relationship between `CLK0` and `CLK1`.
+Additionally, the SI5351 outputs exhibited unwanted fixed-offset sidebands and
+spurs in the spectrum under certain tuning strategies.
+
+INVESTIGATION SUMMARY
+================================================================================
+- Multiple Si5351 modules and analyzers were used to rule out measurement errors.
+- Observed ±31.5 kHz spurs and other fixed-offset sidebands correlated with
+  certain tuning strategies and output drive transitions.
+- The Si5351's spread-spectrum clocking (SSC) registers were found non-zero on
+  some modules and are not managed by the upstream Etherkit library.
+
+ROOT CAUSE
+================================================================================
+Two interacting factors were responsible for the worst symptoms:
+
+1. Some modules powering up with non-zero SSC parameters produced spectral
+   spreading and spurs that showed up as fixed-offset sidebands.
+2. The higher-band tuning strategy (relying on direct phase-register quadrature
+   with live PLL/divider changes) produced larger step-noise and interacted with
+   the SSC behavior in a way that amplified the visible spurs.
+
+FIX APPLIED
+================================================================================
+1) Spread-spectrum disable — see `docs/summaries/SPREAD_SPECTRUM_NOTES.md` for details.
+
+2) Unified low-noise tuning method (all bands)
+   - Replaced the mixed strategy with a single fixed-divider PLL-retune method
+     across all amateur bands:
+     - A per-band fixed multisynth divider is chosen so PLL frequency stays in
+       the Si5351 VCO range (600..900 MHz).
+     - `CLK0` and `CLK1` are both sourced from the same PLL (PLLA) with the
+       divider fixed for the band; tuning inside the band is done by changing
+       the PLL frequency only (`set_freq_manual()`), not the multisynth divider.
+     - On first entry to a band (or when reversing quadrature polarity), the
+       firmware performs a brief phase-kick: a short temporary offset is
+       applied to `CLK1`, then restored, producing the effective ±90° phase
+       relationship without the large step noise.
+
+3) Drive & output shaping
+   - Output drive reduced to `4 mA` for `CLK0/CLK1` to reduce transient coupling.
+   - Unused outputs powered down.
+
+IMPLEMENTATION NOTES
+================================================================================
+- Code location: `lib/SI5351Control/src/SI5351Control.cpp`
+- The per-band divider table is implemented in `bandProfileForFrequencyHz()`.
+- 6m (50–54 MHz) uses a custom divider (14) to keep the PLL in-range; using
+  the 10m divider would push the PLL above the Si5351 VCO limit and prevent retuning.
+- SSC clearing is performed in `beginDevice()` immediately after `init()`.
+
+CALIBRATION APPROACH
+================================================================================
+- The firmware uses two correction terms in `src/main.cpp`:
+  - `SI5351_CORRECTION_PPB`: base correction from crystal measurement
+  - `SI5351_CORRECTION_TRIM_PPB`: a small empirical trim applied after the
+    SSC/tuning method change to bring displayed frequency and measured carrier
+    into alignment.
+- During debugging this trim was adjusted iteratively from analyzer readings
+  and finally set to a midpoint of the most recent measurements so residual
+  error is centered near zero rather than chasing thermal drift.
+
+TEST RESULTS
+================================================================================
+- Sideband/spur issue removed after SSC clear + unified tuning strategy.
+- Frequency accuracy on 7 MHz reduced to within a few tens of Hz (final
+  residuals in-field ≈ ±20 Hz depending on analyzer span and ambient
+  temperature). This is acceptable for `FT8` and `WSPR` when using the
+  existing crystal reference; for permanent sub-Hz stability an improved
+  reference (temperature-stabilized or external reference) is recommended.
+
+RELEVANT FILES
+================================================================================
+- `lib/SI5351Control/src/SI5351Control.cpp` — tuning/quadrature implementation
+- `src/main.cpp` — modes, calibration constants (`SI5351_CORRECTION_*_PPB`)
+- `CURRENT_SI5351_APPROACH.md` — concise overview of the approach (human-read)
+
+ARCHIVE
+================================================================================
+The original low-band debug notes have been preserved as
+`docs/summaries/QUADRATURE_PHASE_CORRECTION_SUMMARY_OLD.txt`.
+
+NEXT STEPS / RECOMMENDATIONS
+================================================================================
+1. If you need sub-Hz frequency stability for WSPR/FT8 contests, fit a
+   temperature-stabilized reference or use an external 10 MHz reference and
+   set `SI5351` to use `CLKIN` / adjust `set_ref_freq()` accordingly.
+2. Optionally change SSC clearing to toggle only the SSC enable bit instead
+   of zeroing all SSC parameters if you require reproducible module behaviour
+   across different hardware vendors.
+3. Add an automated calibration routine (serial/USB) that measures a known
+   reference and writes the final `SI5351_CORRECTION_PPB` into persistent
+   flash storage so each board can be calibrated once in production.
+
+================================================================================
+End of summary
+================================================================================
 - Measured (initial): ~10.5° phase difference (79.5° error)
   - Zero-crossing delay: 16.26 ns at 1.8 MHz (period 555.56 ns)
 - Required accuracy: <1° for 30-40 dB SSB suppression

@@ -1,0 +1,19 @@
+OLD QUADRATURE PHASE CORRECTION SUMMARY
+======================================
+
+This file is a backup of the previous QUADRATURE_PHASE_CORRECTION_SUMMARY.txt
+before extracting the spread-spectrum notes into a separate file.
+
+See the current summary in QUADRATURE_PHASE_CORRECTION_SUMMARY.txt and the
+spread-spectrum details in SPREAD_SPECTRUM_NOTES.md.
+================================================================================
+QRP TRANSCEIVER V3 - LOW-BAND QUADRATURE PHASE CORRECTION
+Debugging Summary - 26 April 2026
+================================================================================
+
+PROBLEM STATEMENT
+================================================================================
+Low-frequency quadrature outputs (1.8 MHz / 160m band) were severely misphased:
+- Target: 90° phase difference between CLK0 and CLK1 outputs
+
+(Original notes preserved here.)
