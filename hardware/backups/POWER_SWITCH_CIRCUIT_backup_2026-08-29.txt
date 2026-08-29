@@ -1,0 +1,60 @@
+QRP Transceiver Power Latch Circuit (Short Press ON, Long Press OFF)
+Date: 2026-05-23
+
+Purpose
+- Very low current when off.
+- Controlled (orderly) shutdown before power is removed.
+- User behavior: short press POWER to turn on, long press POWER to turn off.
+
+Parts
+1) Q1: P-channel MOSFET high-side switch (AO3407A, IRLML6402, or similar)
+2) Q2: N-channel MOSFET gate pull-down driver (2N7002, BSS138, or similar)
+3) R1: 1M (Q1 gate to VIN, default OFF)
+4) R2: 100R to 1k (series from button node to Q1 gate, optional protection)
+5) R3: 100k (Q2 gate to GND pulldown)
+6) C1: 100nF (Q1 gate to source/VIN for noise immunity)
+7) SW1: Momentary push button (POWER)
+
+Pin-by-Pin Wiring
+1) VIN -> Q1 source
+2) Q1 drain -> V_SYS (main system rail)
+3) Q1 gate -> GATE_CTRL node
+4) R1 from GATE_CTRL to VIN
+5) C1 from GATE_CTRL to VIN
+6) SW1 one side -> GND
+7) SW1 other side -> GATE_CTRL (through R2)
+8) Q2 drain -> GATE_CTRL
+9) Q2 source -> GND
+10) Q2 gate -> Pico POWER_HOLD GPIO (optional 1k series)
+11) R3 from Q2 gate to GND
+
+Operation
+OFF state
+- R1 pulls Q1 gate up to VIN, so Q1 is OFF.
+
+Power ON (short press)
+- Press SW1: GATE_CTRL pulled low.
+- Q1 turns ON and powers V_SYS.
+- Firmware quickly drives POWER_HOLD high.
+- Q2 turns ON and keeps GATE_CTRL low after button release (latched ON).
+
+Power OFF (long press)
+- Firmware detects long press on POWER button.
+- Firmware saves settings to flash.
+- Firmware mutes outputs and disables clocks.
+- Firmware drives POWER_HOLD low.
+- Q2 turns OFF, R1 pulls gate high, Q1 turns OFF, V_SYS drops.
+
+Suggested GPIOs for this project
+- POWER button input: GP15 (already used in firmware)
+- POWER_HOLD output: GP5 (recommended free pin)
+
+Firmware timing suggestions
+- Debounce: 20 to 30 ms (25 ms currently used)
+- Long-press threshold: 1.5 to 2.0 s (1.5 s currently used)
+
+Checks before bring-up
+- Verify PMOS orientation (source to VIN, drain to V_SYS).
+- Ensure PMOS Rds(on) is low enough for full load current.
+- Keep GATE_CTRL traces short to reduce noise pickup.
+- If startup is noisy, increase C1 up to 220nF and re-test button behavior.
