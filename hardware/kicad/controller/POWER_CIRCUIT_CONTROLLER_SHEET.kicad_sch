@@ -1,14 +1,8 @@
  (kicad_sch (version 20211014) (generator eeschema)
-  (paper "A4")
-  (title_block
-    (title "Controller: Processor Power Latch")
-    (company "QRPTransceiver")
-    (rev "0.1")
-    (date "2026-08-29")
-    (comment "Draft schematic sheet for the processor power-latch. Update symbols/footprints in KiCad.")
-  )
 
-  ;; Minimal valid symbol entries (generic). Replace with real library parts in KiCad.
+  ;; Minimal sheet without title_block to avoid parser issues.
+  ;; Replace generic symbols with real library parts inside KiCad.
+
   (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (value "R1") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1M"))
   (symbol (lib_id "Device:R") (at 50 80 0) (unit 1) (value "R2") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1k"))
   (symbol (lib_id "Device:R") (at 50 120 0) (unit 1) (value "R3") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "100k"))
@@ -34,5 +28,4 @@
   (wire (pts (xy 200 100) (xy 200 140)))
   (label (name "POWER_HOLD") (at 210 120 0) (orientation 0))
 
-  (comment "Note: Update library links and footprints in KiCad.")
 )
