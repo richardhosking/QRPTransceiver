@@ -1,9 +1,4 @@
  (kicad_sch (version 20220628) (generator eeschema)
-  (paper "A4")
-
-  ;; Consolidated minimal KiCad 8 schematic sheet for controller power-latch.
-  ;; Import into KiCad and replace the generic symbols with your project libraries.
-
   (symbol (lib_id "Device:R") (at 50 40 0) (unit 1) (value "R1") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1M"))
   (symbol (lib_id "Device:R") (at 50 80 0) (unit 1) (value "R2") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "1k"))
   (symbol (lib_id "Device:R") (at 50 120 0) (unit 1) (value "R3") (footprint "Resistor_SMD:R_0603_1608Metric") (property "Value" "100k"))
@@ -17,7 +12,6 @@
   (symbol (lib_id "Diode:D_Schottky") (at 10 140 0) (unit 1) (value "D1") (footprint "Diode_SMD:Package_DO-214") (property "Value" "SS"))
   (symbol (lib_id "Regulator:LD") (at 200 140 0) (unit 1) (value "U1") (footprint "Package_TO_SOT_SMD:SOT-223") (property "Value" "LDO_3V3"))
 
-  ;; Nets and labels
   (wire (pts (xy 20 60) (xy 60 60)))
   (label (name "VIN") (at 5 60 0) (orientation 180))
   (wire (pts (xy 60 60) (xy 120 60)))
@@ -28,5 +22,4 @@
   (label (name "GND") (at 140 150 0) (orientation 0))
   (wire (pts (xy 200 100) (xy 200 140)))
   (label (name "POWER_HOLD") (at 210 120 0) (orientation 0))
-
 )
